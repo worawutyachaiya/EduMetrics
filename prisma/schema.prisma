@@ -1,0 +1,117 @@
+// prisma/schema.prisma - ตรวจสอบให้แน่ใจว่าเหมือนกับนี้
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// prisma/schema.prisma - เพิ่มฟิลด์ email
+model User {
+  id                   Int       @id @default(autoincrement())
+  firstName            String
+  lastName             String
+  studentId            String    @unique
+  email                String    @unique  // เพิ่มฟิลด์อีเมล
+  password             String
+  academicYear         Int
+  role                 String    @default("student")
+  isActive             Boolean   @default(true)
+  
+  // Password reset fields
+  resetToken           String?   
+  resetTokenExpiry     DateTime? 
+  
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  // Relations
+  quizResults QuizResult[]
+  userProgress UserProgress[]
+}
+
+model Quiz {
+  id           Int      @id @default(autoincrement())
+  questionType String   @db.VarChar(10) 
+  question     String   @db.Text
+  choices      String[] 
+  correct      String   @db.VarChar(1) 
+  score        String   @db.VarChar(10)
+  phase        String   @db.VarChar(10) 
+  lesson       Int      
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("quizzes")
+}
+
+model QuizResult {
+  id          Int      @id @default(autoincrement())
+  studentId   String   
+  userId      Int      
+  user        User     @relation(fields: [userId], references: [id])
+  quizType    String   
+  phase       String   
+  lesson      Int      
+  score       Int      
+  totalScore  Int      
+  percentage  Float    
+  passed      Boolean  
+  answers     String   
+  completedAt DateTime @default(now())
+  
+  @@map("quiz_results")
+}
+
+model UserProgress {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  courseType String  
+  lesson    Int      
+  completed Boolean  @default(false)
+  skipped   Boolean  @default(false) 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, courseType, lesson])
+  @@map("user_progress")
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  videos      Video[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("courses")
+}
+
+model Category {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  videos Video[]
+  
+  @@map("categories")
+}
+
+model Video {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String    @db.Text
+  youtubeUrl  String
+  image       String?
+  courseType  String    
+  lesson      Int       
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("videos")
+  Course Course[]
+}
