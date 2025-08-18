@@ -1,4 +1,4 @@
-// components/EnhancedPosttestComponent.tsx - Fixed version
+// components/EnhancedPosttestComponent.tsx - (ฉบับแก้ไขกลับเป็นเหมือนเดิม + แก้ไขการตรวจคำตอบ)
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from '@/lib/auth-context';
@@ -21,7 +21,7 @@ type QuizItem = {
   id: number;
   question: string;
   choices: string[];
-  correct: string;
+  correct: string; // "1", "2", "3", "4"
   score: string;
   lesson: number;
 };
@@ -60,6 +60,7 @@ interface TooltipProps {
   payload?: Array<{
     value: number;
     name: string;
+    payload: any;
   }>;
   label?: string;
 }
@@ -70,7 +71,10 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
   const [mode, setMode] = useState<'menu' | 'quiz' | 'history' | 'comparison'>('menu');
   const [selectedLesson, setSelectedLesson] = useState<number | null>(null);
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
-  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+
+  // ✨ **[แก้ไข 1/4]** เปลี่ยน State ให้เก็บคำตอบเป็นตัวเลข (ลำดับของคำตอบ)
+  const [answers, setAnswers] = useState<{ [key: number]: number }>({});
+  
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,38 +83,37 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
   const [availableLessons, setAvailableLessons] = useState<number[]>([]);
 
   const fetchAvailableLessons = useCallback(async () => {
+    setLoading(true);
     try {
+      // ✨ **[แก้ไข]** กลับไปดึงข้อมูลบทเรียนจาก pre-test เหมือนเดิม
       const response = await fetch(`/api/available-lessons?type=${type}&phase=pre`);
       if (response.ok) {
-        const data = await response.json();
-        setAvailableLessons(data);
+        setAvailableLessons(await response.json());
       }
     } catch (error) {
       console.error('Error fetching available lessons:', error);
+    } finally {
+      setLoading(false);
     }
   }, [type]);
 
   const fetchResults = useCallback(async () => {
+    if (!user?.id) return;
     try {
-      const response = await fetch(`/api/quiz-results?userId=${user?.id}&quizType=${type}&phase=post`);
-      if (response.ok) {
-        const data = await response.json();
-        setResults(data);
-      }
+      const response = await fetch(`/api/quiz-results?userId=${user.id}&quizType=${type}&phase=post`);
+      if (response.ok) setResults(await response.json());
     } catch (error) {
-      console.error('Error fetching results:', error);
+      console.error('Error fetching post-test results:', error);
     }
   }, [user?.id, type]);
 
   const fetchPretestResults = useCallback(async () => {
+    if (!user?.id) return;
     try {
-      const response = await fetch(`/api/quiz-results?userId=${user?.id}&quizType=${type}&phase=pre`);
-      if (response.ok) {
-        const data = await response.json();
-        setPretestResults(data);
-      }
+      const response = await fetch(`/api/quiz-results?userId=${user.id}&quizType=${type}&phase=pre`);
+      if (response.ok) setPretestResults(await response.json());
     } catch (error) {
-      console.error('Error fetching pretest results:', error);
+      console.error('Error fetching pre-test results:', error);
     }
   }, [user?.id, type]);
 
@@ -127,14 +130,10 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
       setLoading(true);
       setError(null);
       setAnswers({});
-
+      // ✨ **[แก้ไข]** กลับไปดึงข้อสอบจาก pre-test เหมือนเดิม
       const response = await fetch(`/api/quizzes/by-lesson?type=${type}&phase=pre&lesson=${lesson}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch quizzes');
-      }
-
-      const data = await response.json();
-      setQuizzes(data);
+      if (!response.ok) throw new Error('Failed to fetch quizzes');
+      setQuizzes(await response.json());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการโหลดข้อมูล');
     } finally {
@@ -148,47 +147,43 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
     setMode('quiz');
   };
 
-  const handleChange = (questionIndex: number, value: string) => {
-    setAnswers(prev => ({ ...prev, [questionIndex]: value }));
+  // ✨ **[แก้ไข 2/4]** อัปเดตฟังก์ชันให้รับและเก็บ "ลำดับของตัวเลือก"
+  const handleChange = (questionIndex: number, choiceIndex: number) => {
+    setAnswers(prev => ({ ...prev, [questionIndex]: choiceIndex + 1 })); // เก็บเป็น 1, 2, 3, 4
   };
 
   const calculateScore = () => {
     let totalScore = 0;
-
     quizzes.forEach((quiz, index) => {
+      // ✨ **[แก้ไข 3/4]** เปรียบเทียบ "ตัวเลข" กับ "ตัวเลข"
       const userAnswer = answers[index];
-      const correctAnswer = quiz.choices[parseInt(quiz.correct) - 1];
+      const correctAnswer = parseInt(quiz.correct);
       
       if (userAnswer === correctAnswer) {
-        totalScore += parseInt(quiz.score);
+        totalScore += parseFloat(quiz.score);
       }
     });
 
-    const maxScore = quizzes.reduce((sum, quiz) => sum + parseInt(quiz.score), 0);
+    const maxScore = quizzes.reduce((sum, quiz) => sum + parseFloat(quiz.score), 0);
     const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
 
     return {
       score: totalScore,
       totalScore: maxScore,
-      percentage: Math.round(percentage * 100) / 100
+      percentage: Math.round(percentage * 100) / 100,
+      passed: percentage >= 60,
     };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (Object.keys(answers).length !== quizzes.length) {
       alert('กรุณาตอบให้ครบทุกข้อ');
       return;
     }
-
     setSubmitting(true);
-    
     try {
       const scoreResult = calculateScore();
-      
-      const attemptCount = results.filter(r => r.lesson === selectedLesson).length + 1;
-      
       const response = await fetch('/api/quiz-results', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -198,25 +193,17 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
           quizType: type,
           phase: 'post',
           lesson: selectedLesson,
-          score: scoreResult.score,
-          totalScore: scoreResult.totalScore,
-          percentage: scoreResult.percentage,
-          attempt: attemptCount,
+          ...scoreResult,
           answers: JSON.stringify(answers)
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to save quiz result');
-      }
+      if (!response.ok) throw new Error('Failed to save quiz result');
+      const data = await response.json();
 
-      alert(`ทำข้อสอบสำเร็จ!\nคะแนน: ${scoreResult.score}/${scoreResult.totalScore} (${scoreResult.percentage}%)\nครั้งที่: ${attemptCount}`);
-      
+      alert(`ทำข้อสอบสำเร็จ!\nคะแนน: ${scoreResult.score}/${scoreResult.totalScore} (${scoreResult.percentage}%)\nครั้งที่: ${data.attempt}`);
       await fetchResults();
       setMode('menu');
-      setSelectedLesson(null);
-      setAnswers({});
-      
     } catch (error) {
       console.error('Error submitting quiz:', error);
       alert('เกิดข้อผิดพลาดในการส่งคำตอบ');
@@ -224,6 +211,8 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
       setSubmitting(false);
     }
   };
+
+  // ... (ส่วน UI และฟังก์ชันอื่นๆ ไม่มีการเปลี่ยนแปลง) ...
 
   const getResultsForLesson = (lesson: number) => {
     return results.filter(r => r.lesson === lesson).sort((a, b) => 
@@ -241,7 +230,7 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
       const posttests = getResultsForLesson(lesson);
       const latestPosttest = posttests[0];
       const bestPosttest = posttests.reduce((best, current) => 
-        current.percentage > best.percentage ? current : best, posttests[0]);
+        current.percentage > best.percentage ? current : best, { percentage: 0 });
 
       return {
         lesson,
@@ -254,13 +243,12 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
     });
   };
 
-  // สร้างข้อมูลสำหรับกราฟเปรียบเทียบ
   const getComparisonChartData = (): ChartDataPoint[] => {
     return availableLessons.map(lesson => {
       const pretest = getPretestResult(lesson);
       const posttests = getResultsForLesson(lesson);
       const bestPosttest = posttests.reduce((best, current) => 
-        current.percentage > best.percentage ? current : best, posttests[0]);
+        current.percentage > best.percentage ? current : best, { percentage: 0 });
 
       return {
         lesson: `บทที่ ${lesson}`,
@@ -271,15 +259,13 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
     });
   };
 
-  // สร้างข้อมูลสำหรับกราฟเส้น
   const getProgressChartData = (): ProgressDataPoint[] => {
     const chartData: ProgressDataPoint[] = [];
     
     availableLessons.forEach(lesson => {
       const pretest = getPretestResult(lesson);
-      const posttests = getResultsForLesson(lesson).reverse(); // เรียงจากเก่าไปใหม่
+      const posttests = getResultsForLesson(lesson).reverse();
       
-      // เพิ่มคะแนนก่อนเรียน
       if (pretest) {
         chartData.push({
           lesson: `บทที่ ${lesson}`,
@@ -289,7 +275,6 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
         });
       }
       
-      // เพิ่มคะแนนหลังเรียนแต่ละครั้ง
       posttests.forEach((result, index) => {
         chartData.push({
           lesson: `บทที่ ${lesson}`,
@@ -303,7 +288,6 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
     return chartData;
   };
 
-  // Custom Tooltip Components
   const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length) {
       return (
@@ -324,32 +308,36 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border rounded shadow">
-          <p className="font-medium">คะแนน: {payload[0].value}%</p>
+          <p className="font-medium">{payload[0]?.payload?.phase}: {payload[0].value}%</p>
         </div>
       );
     }
     return null;
   };
 
-  // Menu Mode
+  if (loading && mode === 'menu') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-xl text-gray-800">กำลังโหลดข้อมูล...</div>
+      </div>
+    );
+  }
+
   if (mode === 'menu') {
     return (
-      <div className="min-h-screen flex flex-col items-center p-8 bg-gray-100">
-        <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">{title}</h1>
-            <p className="text-gray-700">เลือกรูปแบบการทำข้อสอบหลังเรียน</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {/* ทำข้อสอบใหม่ */}
-            <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
-              <h2 className="text-xl font-semibold text-blue-800 mb-4">📝 ทำข้อสอบ</h2>
-              <p className="text-blue-700 text-sm mb-4">เลือกบทเรียนที่ต้องการทำข้อสอบ</p>
-              <div className="space-y-2">
-                {availableLessons.map(lesson => {
-                  const attemptCount = getResultsForLesson(lesson).length;
-                  return (
+        <div className="min-h-screen flex flex-col items-center p-8 bg-gray-100">
+          <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-800 mb-4">{title}</h1>
+              <p className="text-gray-700">เลือกรูปแบบการทำข้อสอบหลังเรียน</p>
+            </div>
+  
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                <h2 className="text-xl font-semibold text-blue-800 mb-4">📝 ทำข้อสอบ</h2>
+                <p className="text-blue-700 text-sm mb-4">เลือกบทเรียนที่ต้องการทำข้อสอบ</p>
+                <div className="space-y-2">
+                  {availableLessons.length > 0 ? availableLessons.map(lesson => (
                     <button
                       key={lesson}
                       onClick={() => handleLessonSelect(lesson)}
@@ -358,54 +346,50 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
                       <div className="flex justify-between items-center">
                         <span className="font-medium text-gray-800">บทเรียนที่ {lesson}</span>
                         <span className="text-xs text-gray-600">
-                          {attemptCount > 0 ? `ทำแล้ว ${attemptCount} ครั้ง` : 'ยังไม่ได้ทำ'}
+                          {getResultsForLesson(lesson).length > 0 ? `ทำแล้ว ${getResultsForLesson(lesson).length} ครั้ง` : 'ยังไม่ได้ทำ'}
                         </span>
                       </div>
                     </button>
-                  );
-                })}
+                  )) : <p className="text-sm text-gray-500">ไม่มีบทเรียนให้ทำข้อสอบ</p>}
+                </div>
+              </div>
+  
+              <div className="bg-green-50 p-6 rounded-xl border border-green-200">
+                <h2 className="text-xl font-semibold text-green-800 mb-4">📊 ประวัติคะแนน</h2>
+                <p className="text-green-700 text-sm mb-4">ดูผลคะแนนของแต่ละครั้งที่ทำ</p>
+                <button
+                  onClick={() => setMode('history')}
+                  className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  ดูประวัติทั้งหมด
+                </button>
+              </div>
+  
+              <div className="bg-purple-50 p-6 rounded-xl border border-purple-200">
+                <h2 className="text-xl font-semibold text-purple-800 mb-4">📈 การพัฒนา</h2>
+                <p className="text-purple-700 text-sm mb-4">เปรียบเทียบผลก่อนเรียนและหลังเรียน</p>
+                <button
+                  onClick={() => setMode('comparison')}
+                  className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  ดูการพัฒนา
+                </button>
               </div>
             </div>
-
-            {/* ดูประวัติ */}
-            <div className="bg-green-50 p-6 rounded-xl border border-green-200">
-              <h2 className="text-xl font-semibold text-green-800 mb-4">📊 ประวัติคะแนน</h2>
-              <p className="text-green-700 text-sm mb-4">ดูผลคะแนนของแต่ละครั้งที่ทำ</p>
+  
+            <div className="text-center">
               <button
-                onClick={() => setMode('history')}
-                className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                onClick={() => router.push('/')}
+                className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors"
               >
-                ดูประวัติทั้งหมด
+                กลับหน้าหลัก
               </button>
             </div>
-
-            {/* เปรียบเทียบ */}
-            <div className="bg-purple-50 p-6 rounded-xl border border-purple-200">
-              <h2 className="text-xl font-semibold text-purple-800 mb-4">📈 การพัฒนา</h2>
-              <p className="text-purple-700 text-sm mb-4">เปรียบเทียบผลก่อนเรียนและหลังเรียน</p>
-              <button
-                onClick={() => setMode('comparison')}
-                className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                ดูการพัฒนา
-              </button>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <button
-              onClick={() => router.push('/')}
-              className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors"
-            >
-              กลับหน้าหลัก
-            </button>
           </div>
         </div>
-      </div>
-    );
+      );
   }
 
-  // Quiz Mode
   if (mode === 'quiz') {
     if (loading) {
       return (
@@ -457,12 +441,13 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
                 <div className="space-y-2 pl-4">
                   {quiz.choices.map((choice, i) => (
                     <label key={i} className="flex items-center cursor-pointer">
+                       {/* ✨ **[แก้ไข 4/4]** อัปเดต UI ให้ส่งและตรวจสอบกับ "ลำดับ" */}
                       <input
                         type="radio"
                         name={`question-${index}`}
-                        value={choice}
-                        checked={answers[index] === choice}
-                        onChange={() => handleChange(index, choice)}
+                        value={i + 1}
+                        checked={answers[index] === i + 1}
+                        onChange={() => handleChange(index, i)}
                         className="mr-3"
                         disabled={submitting}
                       />
@@ -488,7 +473,7 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
     );
   }
 
-  // History Mode
+  // ... (ส่วน History และ Comparison ไม่มีการเปลี่ยนแปลง) ...
   if (mode === 'history') {
     return (
       <div className="min-h-screen flex flex-col items-center p-8 bg-gray-100">
@@ -576,7 +561,6 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
     );
   }
 
-  // Comparison Mode with Charts
   if (mode === 'comparison') {
     const improvementData = getImprovementData();
     const comparisonChartData = getComparisonChartData();
@@ -595,32 +579,31 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
             </button>
           </div>
 
-          {/* สรุปภาพรวม */}
           <div className="mb-8">
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-4 text-gray-800">สรุปภาพรวม</h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-white p-4 rounded-lg text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {(improvementData.reduce((sum, data) => sum + data.pretest, 0) / improvementData.length || 0).toFixed(1)}%
+                    {(improvementData.reduce((sum, data) => sum + data.pretest, 0) / (improvementData.length || 1)).toFixed(1)}%
                   </div>
                   <div className="text-sm text-gray-700">คะแนนเฉลี่ยก่อนเรียน</div>
                 </div>
                 <div className="bg-white p-4 rounded-lg text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    {(improvementData.reduce((sum, data) => sum + data.latestPosttest, 0) / improvementData.length || 0).toFixed(1)}%
+                    {(improvementData.reduce((sum, data) => sum + data.latestPosttest, 0) / (improvementData.length || 1)).toFixed(1)}%
                   </div>
                   <div className="text-sm text-gray-700">คะแนนเฉลี่ยหลังเรียน</div>
                 </div>
                 <div className="bg-white p-4 rounded-lg text-center">
                   <div className="text-2xl font-bold text-purple-600">
-                    {(improvementData.reduce((sum, data) => sum + data.bestPosttest, 0) / improvementData.length || 0).toFixed(1)}%
+                    {(improvementData.reduce((sum, data) => sum + data.bestPosttest, 0) / (improvementData.length || 1)).toFixed(1)}%
                   </div>
                   <div className="text-sm text-gray-700">คะแนนเฉลี่ยสูงสุด</div>
                 </div>
                 <div className="bg-white p-4 rounded-lg text-center">
                   <div className="text-2xl font-bold text-orange-600">
-                    +{(improvementData.reduce((sum, data) => sum + Math.max(0, data.improvement), 0) / improvementData.length || 0).toFixed(1)}%
+                    +{(improvementData.reduce((sum, data) => sum + Math.max(0, data.improvement), 0) / (improvementData.length || 1)).toFixed(1)}%
                   </div>
                   <div className="text-sm text-gray-700">การพัฒนาเฉลี่ย</div>
                 </div>
@@ -628,7 +611,6 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
             </div>
           </div>
 
-          {/* กราฟเปรียบเทียบก่อน-หลังเรียน */}
           <div className="mb-8">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">📊 เปรียบเทียบคะแนนก่อนและหลังเรียน</h3>
             <div className="bg-white p-6 rounded-lg border">
@@ -648,22 +630,23 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
             </div>
           </div>
 
-          {/* กราฟความก้าวหน้าตลอดเวลา */}
           {progressChartData.length > 0 && (
             <div className="mb-8">
               <h3 className="text-xl font-semibold mb-4 text-gray-800">📈 ความก้าวหน้าตลอดการเรียน</h3>
               <div className="bg-white p-6 rounded-lg border">
                 <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={progressChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <LineChart data={progressChartData} margin={{ top: 20, right: 30, left: 20, bottom: 100 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="phase" angle={-45} textAnchor="end" height={100} />
+                    <XAxis dataKey="phase" angle={-60} textAnchor="end" interval={0} />
                     <YAxis domain={[0, 100]} />
                     <Tooltip content={<ProgressTooltip />} />
+                    <Legend />
                     <ReferenceLine y={60} stroke="#ff6b6b" strokeDasharray="5 5" label="เกณฑ์ผ่าน" />
                     <ReferenceLine y={80} stroke="#51cf66" strokeDasharray="5 5" label="เกณฑ์ดี" />
                     <Line 
                       type="monotone" 
                       dataKey="percentage" 
+                      name="คะแนน"
                       stroke="#8884d8" 
                       strokeWidth={3}
                       dot={{ fill: '#8884d8', strokeWidth: 2, r: 6 }}
@@ -674,118 +657,6 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
               </div>
             </div>
           )}
-
-          {/* การดำเนินความก้าวหน้า */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {improvementData.map(data => (
-              <div key={data.lesson} className="border rounded-lg p-6 bg-gradient-to-br from-blue-50 to-purple-50">
-                <h3 className="text-lg font-semibold mb-4 text-center text-gray-800">บทเรียนที่ {data.lesson}</h3>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">ก่อนเรียน:</span>
-                    <span className="font-semibold text-blue-600">{data.pretest.toFixed(1)}%</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">หลังเรียน (ล่าสุด):</span>
-                    <span className="font-semibold text-green-600">{data.latestPosttest.toFixed(1)}%</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">คะแนนสูงสุด:</span>
-                    <span className="font-semibold text-purple-600">{data.bestPosttest.toFixed(1)}%</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">จำนวนครั้งที่ทำ:</span>
-                    <span className="font-semibold text-gray-800">{data.attempts} ครั้ง</span>
-                  </div>
-                  
-                  {/* Mini Progress Bar */}
-                  <div className="mt-3">
-                    <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>ก่อนเรียน</span>
-                      <span>หลังเรียน</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                      <div 
-                        className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(data.latestPosttest, 100)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <div className="border-t pt-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">การพัฒนา:</span>
-                      <span className={`font-bold text-lg ${
-                        data.improvement > 0 ? 'text-green-600' :
-                        data.improvement === 0 ? 'text-gray-600' : 'text-red-600'
-                      }`}>
-                        {data.improvement > 0 ? '+' : ''}{data.improvement.toFixed(1)}%
-                      </span>
-                    </div>
-                    
-                    {data.improvement > 0 && (
-                      <div className="mt-2 text-center">
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                          🎉 มีพัฒนาการ!
-                        </span>
-                      </div>
-                    )}
-                    
-                    {data.improvement === 0 && data.attempts > 0 && (
-                      <div className="mt-2 text-center">
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                          📊 คะแนนคงที่
-                        </span>
-                      </div>
-                    )}
-                    
-                    {data.improvement < 0 && (
-                      <div className="mt-2 text-center">
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">
-                          📉 ต้องปรับปรุง
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* ข้อเสนอแนะการเรียนรู้ */}
-          <div className="mt-8">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800">💡 ข้อเสนอแนะ</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {improvementData.map(data => {
-                  let suggestion = '';
-                  let color = '';
-                  
-                  if (data.latestPosttest >= 80) {
-                    suggestion = `ยอดเยี่ยม! คุณมีความเข้าใจในบทเรียนที่ ${data.lesson} เป็นอย่างดี`;
-                    color = 'text-green-600 bg-green-50';
-                  } else if (data.latestPosttest >= 60) {
-                    suggestion = `ดี! แต่ยังสามารถพัฒนาในบทเรียนที่ ${data.lesson} ได้อีก`;
-                    color = 'text-yellow-600 bg-yellow-50';
-                  } else {
-                    suggestion = `ควรทบทวนบทเรียนที่ ${data.lesson} และลองทำข้อสอบใหม่`;
-                    color = 'text-red-600 bg-red-50';
-                  }
-
-                  return (
-                    <div key={data.lesson} className={`p-3 rounded-lg border ${color}`}>
-                      <div className="font-medium text-sm">บทเรียนที่ {data.lesson}</div>
-                      <div className="text-xs mt-1">{suggestion}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     );

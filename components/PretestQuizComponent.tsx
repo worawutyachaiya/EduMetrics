@@ -1,4 +1,4 @@
-// components/PretestQuizComponent.tsx - Updated with dark text
+// components/PretestQuizComponent.tsx - (ฉบับแก้ไข)
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from '@/lib/auth-context';
@@ -8,7 +8,7 @@ type QuizItem = {
   id: number;
   question: string;
   choices: string[];
-  correct: string;
+  correct: string; // "1", "2", "3", "4"
   score: string;
   lesson: number;
 };
@@ -23,7 +23,10 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
   const router = useRouter();
   const [currentLesson, setCurrentLesson] = useState(1);
   const [quizzes, setQuizzes] = useState<QuizItem[]>([]);
-  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  
+  // ✨ **[แก้ไข 1/3]** เปลี่ยน State ให้เก็บคำตอบเป็นตัวเลข (ลำดับของคำตอบ)
+  const [answers, setAnswers] = useState<{ [key: number]: number }>({});
+  
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +41,6 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
         const data = await response.json();
         setCompletedLessons(data.completedLessons || []);
         
-        // หาบทเรียนแรกที่ยังไม่ทำ
         const nextLesson = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].find(
           lesson => !data.completedLessons.includes(lesson)
         );
@@ -46,7 +48,7 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
         if (nextLesson) {
           setCurrentLesson(nextLesson);
         } else {
-          // ทำครบทุกบทแล้ว ให้กลับไปหน้าเรียน
+          alert('คุณทำข้อสอบก่อนเรียนครบทุกบทแล้ว!');
           router.push(type === 'HTML' ? '/htmlvideo' : '/cssvideo');
         }
       }
@@ -56,6 +58,7 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
   }, [type, user?.id, router]);
 
   const fetchQuizzes = useCallback(async () => {
+    if (!currentLesson) return;
     try {
       setLoading(true);
       setError(null);
@@ -63,7 +66,7 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
 
       const response = await fetch(`/api/quizzes/by-lesson?type=${type}&phase=pre&lesson=${currentLesson}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch quizzes');
+        throw new Error('Failed to fetch quizzes for the lesson');
       }
 
       const data = await response.json();
@@ -87,30 +90,33 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
     }
   }, [currentLesson, fetchQuizzes]);
 
-  const handleChange = (questionIndex: number, value: string) => {
-    setAnswers(prev => ({ ...prev, [questionIndex]: value }));
+  // ✨ **[แก้ไข 2/3]** อัปเดตฟังก์ชันให้รับและเก็บ "ลำดับของตัวเลือก"
+  const handleChange = (questionIndex: number, choiceIndex: number) => {
+    // เก็บเป็น 1, 2, 3, 4
+    setAnswers(prev => ({ ...prev, [questionIndex]: choiceIndex + 1 }));
   };
 
   const calculateScore = () => {
     let totalScore = 0;
 
     quizzes.forEach((quiz, index) => {
-      const userAnswer = answers[index];
-      const correctAnswer = quiz.choices[parseInt(quiz.correct) - 1];
+      // ✨ **[แก้ไข 3/3]** เปรียบเทียบ "ตัวเลข" กับ "ตัวเลข"
+      const userAnswer = answers[index]; // e.g., 1
+      const correctAnswer = parseInt(quiz.correct); // e.g., 1
       
       if (userAnswer === correctAnswer) {
-        totalScore += parseInt(quiz.score);
+        totalScore += parseFloat(quiz.score);
       }
     });
 
-    const maxScore = quizzes.reduce((sum, quiz) => sum + parseInt(quiz.score), 0);
+    const maxScore = quizzes.reduce((sum, quiz) => sum + parseFloat(quiz.score), 0);
     const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
 
     return {
       score: totalScore,
       totalScore: maxScore,
       percentage: Math.round(percentage * 100) / 100,
-      passed: percentage >= 80 // กำหนดเกณฑ์ผ่าน 80%
+      passed: percentage >= 80
     };
   };
 
@@ -127,7 +133,6 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
     try {
       const scoreResult = calculateScore();
       
-      // บันทึกผลสอบ
       const response = await fetch('/api/quiz-results', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -141,7 +146,7 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
           totalScore: scoreResult.totalScore,
           percentage: scoreResult.percentage,
           passed: scoreResult.passed,
-          answers: JSON.stringify(answers)
+          answers: JSON.stringify(answers) 
         })
       });
 
@@ -149,7 +154,6 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
         throw new Error('Failed to save quiz result');
       }
 
-      // ถ้าผ่าน ให้ข้ามบทเรียนนี้
       if (scoreResult.passed) {
         await fetch('/api/user-progress', {
           method: 'POST',
@@ -163,13 +167,11 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
         });
       }
 
-      // ไปบทเรียนถัดไป
       const nextLesson = currentLesson + 1;
       if (nextLesson <= 10) {
-        setCurrentLesson(nextLesson);
         setCompletedLessons(prev => [...prev, currentLesson]);
+        setCurrentLesson(nextLesson);
       } else {
-        // ทำครบทุกบทแล้ว
         alert('ทำข้อสอบก่อนเรียนครบทุกบทแล้ว!');
         router.push(type === 'HTML' ? '/htmlvideo' : '/cssvideo');
       }
@@ -182,6 +184,7 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
     }
   };
 
+  // ... (ส่วน UI ไม่มีการเปลี่ยนแปลง) ...
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -208,7 +211,6 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
 
   return (
     <div className="min-h-screen flex flex-col items-center p-8 bg-gray-100">
-      {/* Progress bar */}
       <div className="w-full max-w-3xl mb-8">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
@@ -229,7 +231,6 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
         </p>
       </div>
 
-      {/* Quiz form */}
       <main className="flex-1 w-full max-w-3xl bg-white p-8 rounded-xl shadow-lg">
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-2 text-gray-800">
@@ -259,9 +260,9 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
                       <input
                         type="radio"
                         name={`question-${index}`}
-                        value={choice}
-                        checked={answers[index] === choice}
-                        onChange={() => handleChange(index, choice)}
+                        value={i + 1} // ค่าเป็น 1, 2, 3, 4
+                        checked={answers[index] === (i + 1)} // ตรวจสอบกับลำดับ
+                        onChange={() => handleChange(index, i)} // ส่งลำดับไป
                         className="mr-3"
                         disabled={submitting}
                       />
