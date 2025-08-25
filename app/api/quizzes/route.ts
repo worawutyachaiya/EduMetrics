@@ -21,10 +21,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { questionType, question, choices, correct, score, phase } = body
+    const { questionType, question, choices, correct, score, phase, lesson } = body
 
     // Validate required fields
-    if (!questionType || !question || !choices || !correct || !score || !phase) {
+    if (!questionType || !question || !choices || !correct || !score || !phase || lesson === undefined) {
       return NextResponse.json(
         { error: 'กรุณากรอกข้อมูลให้ครบถ้วน' },
         { status: 400 }
@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
         correct,
         score: score.trim(),
         phase,
+        lesson,
       }
     })
 
