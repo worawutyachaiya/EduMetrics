@@ -1,10 +1,12 @@
-// app/admin/video/page.tsx - Optimized version
+// app/admin/video/page.tsx
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import RouteGuard from '@/components/routeGuard';
+import AdminSidebar from '@/components/AdminSidebar';
+import AdminHeader from '@/components/AdminHeader';
 import Image from 'next/image';
 
 // Types
@@ -31,54 +33,40 @@ interface VideoForm {
 
 // Skeleton Loading Component
 const TableSkeleton = () => (
-  <div className="overflow-x-auto">
-    <table className="w-full mt-4 border text-sm">
-      <thead className="bg-gray-200">
-        <tr>
-          <th className="border px-2 py-1">ลำดับ</th>
-          <th className="border px-2 py-1">ประเภท</th>
-          <th className="border px-2 py-1">บทเรียน</th>
-          <th className="border px-2 py-1">หัวข้อ</th>
-          <th className="border px-2 py-1">รายละเอียด</th>
-          <th className="border px-2 py-1">รูปหน้าปก</th>
-          <th className="border px-2 py-1">วิดีโอ</th>
-          <th className="border px-2 py-1">จัดการ</th>
-        </tr>
-      </thead>
-      <tbody>
-        {[...Array(5)].map((_, i) => (
-          <tr key={i} className="bg-white">
-            <td className="border px-2 py-1">
-              <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-            </td>
-            <td className="border px-2 py-1">
-              <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-            </td>
-            <td className="border px-2 py-1">
-              <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-            </td>
-            <td className="border px-2 py-1">
-              <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-            </td>
-            <td className="border px-2 py-1">
-              <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-            </td>
-            <td className="border px-2 py-1">
-              <div className="w-16 h-10 bg-gray-200 rounded animate-pulse mx-auto"></div>
-            </td>
-            <td className="border px-2 py-1">
-              <div className="w-20 h-12 bg-gray-200 rounded animate-pulse mx-auto"></div>
-            </td>
-            <td className="border px-2 py-1">
-              <div className="flex gap-1">
-                <div className="w-12 h-6 bg-gray-200 rounded animate-pulse"></div>
-                <div className="w-8 h-6 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-            </td>
+  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+    <div className="flex justify-between items-center mb-4">
+      <div className="h-6 bg-gray-200 rounded animate-pulse w-48"></div>
+    </div>
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-gray-50 border-b border-gray-200">
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">ลำดับ</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">ประเภท</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">บทเรียน</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">หัวข้อ</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">รายละเอียด</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">รูปหน้าปก</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">วิดีโอ</th>
+            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">จัดการ</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {[...Array(5)].map((_, i) => (
+            <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
+              <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded animate-pulse w-8"></div></td>
+              <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded animate-pulse w-16"></div></td>
+              <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded animate-pulse w-12"></div></td>
+              <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded animate-pulse w-32"></div></td>
+              <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div></td>
+              <td className="px-4 py-3"><div className="h-12 bg-gray-200 rounded animate-pulse w-16"></div></td>
+              <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div></td>
+              <td className="px-4 py-3"><div className="h-8 bg-gray-200 rounded animate-pulse w-24"></div></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   </div>
 );
 
@@ -369,320 +357,319 @@ function AdminVideoContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col text-black">
-      {/* Header */}
-      <header className="bg-white/50 backdrop-blur-sm px-6 py-4 flex">
-        <div className="w-full flex items-center justify-between gap-4">
-          <div className="flex items-center space-x-4">
-            <span className="border px-4 py-1 rounded-full text-black">Admin</span>
-            <span className="text-gray-700">
-              สวัสดี, {user?.firstName} {user?.lastName}
-            </span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            ออกจากระบบ
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <AdminSidebar currentPage="video" />
 
-      <div className="flex flex-1">
-         {/* Sidebar */}
-        <aside className="w-64 bg-white/50 backdrop-blur-sm p-4 shadow text-black">
-          <ul className="space-y-2">
-            <li className="pl-4">
-              <a href="/admin/quiz" className="hover:text-blue-600">จัดการข้อสอบ</a>
-            </li>
-            <li className="pl-4 font-bold text-blue-600">จัดการวิดีโอ</li>
-            <li className="pl-4">
-              <a href="/admin/students" className="hover:text-blue-600">ข้อมูลนักเรียน</a>
-            </li>
-          </ul>
-        </aside>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <AdminHeader 
+          user={user} 
+          title="จัดการวิดีโอ" 
+          onLogout={handleLogout} 
+        />
 
-        {/* Main content */}
-        <main className="flex-1 p-8 bg-white/70 backdrop-blur-sm text-black shadow">
-          <h1 className="text-xl font-bold mb-6">
-            {editingVideo ? 'แก้ไขข้อมูลวิดีโอ' : 'เพิ่มข้อมูลวิดีโอคอร์สเรียน'}
-          </h1>
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-auto">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex justify-between items-center shadow-sm">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+                <button
+                  onClick={() => setError(null)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                >
+                  ปิด
+                </button>
+              </div>
+            )}
 
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
+            {/* Add/Edit Video Form */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="bg-purple-500 p-2 rounded-lg">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {editingVideo ? 'แก้ไขข้อมูลวิดีโอ' : 'เพิ่มข้อมูลวิดีโอคอร์สเรียน'}
+                </h2>
+              </div>
+
+              {/* Form */}
+              <div className="space-y-4 max-w-md mb-8">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ประเภทคอร์ส
+                  </label>
+                  <select
+                    name="courseType"
+                    value={form.courseType}
+                    onChange={handleChange}
+                    disabled={submitting}
+                    className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
+                  >
+                    <option value="HTML">HTML</option>
+                    <option value="CSS">CSS</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    บทเรียนที่
+                  </label>
+                  <select
+                    name="lesson"
+                    value={form.lesson}
+                    onChange={handleChange}
+                    disabled={submitting}
+                    className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                      <option key={num} value={num}>บทเรียนที่ {num}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <input
+                  type="text"
+                  name="title"
+                  placeholder="หัวข้อหลักสูตร"
+                  value={form.title}
+                  onChange={handleChange}
+                  disabled={submitting}
+                  className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
+                />
+
+                <input
+                  type="text"
+                  name="description"
+                  placeholder="รายละเอียด"
+                  value={form.description}
+                  onChange={handleChange}
+                  disabled={submitting}
+                  className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
+                />
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    YouTube URL
+                  </label>
+                  <input
+                    type="url"
+                    name="youtubeUrl"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    value={form.youtubeUrl}
+                    onChange={handleChange}
+                    disabled={submitting}
+                    className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
+                  />
+                  {form.youtubeUrl && (
+                    <p className={`text-sm mt-1 ${
+                      isValidYouTubeUrl(form.youtubeUrl) ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {isValidYouTubeUrl(form.youtubeUrl) ? '✓ URL ถูกต้อง' : '✗ URL ไม่ถูกต้อง'}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    รูปภาพหน้าปก (ถ้าไม่เลือกจะใช้ thumbnail จาก YouTube)
+                  </label>
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleChange}
+                    disabled={submitting}
+                    className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                    className="bg-black text-white px-6 py-2 rounded disabled:bg-gray-400 hover:bg-gray-800"
+                  >
+                    {submitting ? 'กำลังบันทึก...' : editingVideo ? 'อัปเดต' : 'เพิ่ม'}
+                  </button>
+                  {editingVideo && (
+                    <button
+                      onClick={resetForm}
+                      disabled={submitting}
+                      className="bg-gray-500 text-white px-6 py-2 rounded disabled:bg-gray-400 hover:bg-gray-600"
+                    >
+                      ยกเลิก
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
 
-          {/* Form */}
-          <div className="space-y-4 max-w-md mb-8">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                ประเภทคอร์ส
-              </label>
+            {/* Search and Filter */}
+            <div className="mb-6 flex gap-4">
+              <input
+                type="text"
+                placeholder="ค้นหาวิดีโอ..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 border px-4 py-2 rounded text-black"
+              />
               <select
-                name="courseType"
-                value={form.courseType}
-                onChange={handleChange}
-                disabled={submitting}
-                className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="border px-4 py-2 rounded text-black"
               >
+                <option value="all">ทั้งหมด</option>
                 <option value="HTML">HTML</option>
                 <option value="CSS">CSS</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                บทเรียนที่
-              </label>
-              <select
-                name="lesson"
-                value={form.lesson}
-                onChange={handleChange}
-                disabled={submitting}
-                className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                  <option key={num} value={num}>บทเรียนที่ {num}</option>
-                ))}
-              </select>
+            {/* Results count */}
+            <div className="mb-4 text-sm text-gray-600">
+              แสดง {paginatedVideos.length} จาก {filteredVideos.length} วิดีโอ
             </div>
 
-            <input
-              type="text"
-              name="title"
-              placeholder="หัวข้อหลักสูตร"
-              value={form.title}
-              onChange={handleChange}
-              disabled={submitting}
-              className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
-            />
-
-            <input
-              type="text"
-              name="description"
-              placeholder="รายละเอียด"
-              value={form.description}
-              onChange={handleChange}
-              disabled={submitting}
-              className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                YouTube URL
-              </label>
-              <input
-                type="url"
-                name="youtubeUrl"
-                placeholder="https://www.youtube.com/watch?v=..."
-                value={form.youtubeUrl}
-                onChange={handleChange}
-                disabled={submitting}
-                className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
-              />
-              {form.youtubeUrl && (
-                <p className={`text-sm mt-1 ${
-                  isValidYouTubeUrl(form.youtubeUrl) ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {isValidYouTubeUrl(form.youtubeUrl) ? '✓ URL ถูกต้อง' : '✗ URL ไม่ถูกต้อง'}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                รูปภาพหน้าปก (ถ้าไม่เลือกจะใช้ thumbnail จาก YouTube)
-              </label>
-              <input
-                type="file"
-                name="image"
-                accept="image/*"
-                onChange={handleChange}
-                disabled={submitting}
-                className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="bg-black text-white px-6 py-2 rounded disabled:bg-gray-400 hover:bg-gray-800"
-              >
-                {submitting ? 'กำลังบันทึก...' : editingVideo ? 'อัปเดต' : 'เพิ่ม'}
-              </button>
-              {editingVideo && (
-                <button
-                  onClick={resetForm}
-                  disabled={submitting}
-                  className="bg-gray-500 text-white px-6 py-2 rounded disabled:bg-gray-400 hover:bg-gray-600"
-                >
-                  ยกเลิก
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Search and Filter */}
-          <div className="mb-6 flex gap-4">
-            <input
-              type="text"
-              placeholder="ค้นหาวิดีโอ..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 border px-4 py-2 rounded text-black"
-            />
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="border px-4 py-2 rounded text-black"
-            >
-              <option value="all">ทั้งหมด</option>
-              <option value="HTML">HTML</option>
-              <option value="CSS">CSS</option>
-            </select>
-          </div>
-
-          {/* Results count */}
-          <div className="mb-4 text-sm text-gray-600">
-            แสดง {paginatedVideos.length} จาก {filteredVideos.length} วิดีโอ
-          </div>
-
-          {/* Table */}
-          <h2 className="text-lg font-bold mb-4">รายการวิดีโอทั้งหมด</h2>
-          
-          {loading ? (
-            <TableSkeleton />
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full border text-sm text-center text-black">
-                  <thead className="bg-gray-200">
-                    <tr>
-                      <th className="border px-2 py-1">ลำดับ</th>
-                      <th className="border px-2 py-1">ประเภท</th>
-                      <th className="border px-2 py-1">บทเรียน</th>
-                      <th className="border px-2 py-1">หัวข้อหลักสูตร</th>
-                      <th className="border px-2 py-1">รายละเอียด</th>
-                      <th className="border px-2 py-1">รูปหน้าปก</th>
-                      <th className="border px-2 py-1">YouTube Video</th>
-                      <th className="border px-2 py-1">จัดการ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedVideos.length === 0 ? (
-                      <tr>
-                        <td colSpan={8} className="border px-2 py-4 text-center text-gray-500">
-                          {searchTerm || filterType !== 'all' ? 'ไม่พบวิดีโอที่ค้นหา' : 'ไม่มีข้อมูลวิดีโอ'}
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedVideos.map((video, idx) => {
-                        const videoId = extractYouTubeId(video.youtubeUrl);
-                        const thumbnailUrl = videoId ? getYouTubeThumbnail(videoId) : '';
-                        
-                        return (
-                          <tr key={video.id} className="bg-white">
-                            <td className="border px-2 py-1">
-                              {(currentPage - 1) * itemsPerPage + idx + 1}
-                            </td>
-                            <td className="border px-2 py-1">
-                              <span className={`px-2 py-1 rounded text-xs ${
-                                video.courseType === 'HTML' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                              }`}>
-                                {video.courseType}
-                              </span>
-                            </td>
-                            <td className="border px-2 py-1">
-                              <span className="font-medium">{video.lesson}</span>
-                            </td>
-                            <td className="border px-2 py-1 max-w-xs">
-                              <div className="truncate" title={video.title}>
-                                {video.title}
-                              </div>
-                            </td>
-                            <td className="border px-2 py-1 max-w-xs">
-                              <div className="truncate" title={video.description}>
-                                {video.description}
-                              </div>
-                            </td>
-                            <td className="border px-2 py-1">
-                              <Image 
-                                src={video.image || thumbnailUrl || '/placeholder.png'} 
-                                alt="รูป" 
-                                width={64}
-                                height={40}
-                                className="w-16 h-10 object-cover mx-auto rounded"
-                                unoptimized
-                              />
-                            </td>
-                            <td className="border px-2 py-1">
-                              <VideoPreview 
-                                youtubeUrl={video.youtubeUrl} 
-                                title={video.title}
-                              />
-                            </td>
-                            <td className="border px-2 py-1">
-                              <div className="flex gap-1 justify-center">
-                                <button 
-                                  onClick={() => handleEdit(video)}
-                                  className="bg-yellow-400 px-2 py-1 rounded text-white hover:bg-yellow-500 text-xs"
-                                >
-                                  แก้ไข
-                                </button>
-                                <button 
-                                  onClick={() => handleDelete(video.id)}
-                                  className="bg-red-500 px-2 py-1 rounded text-white hover:bg-red-600 text-xs"
-                                >
-                                  ลบ
-                                </button>
-                              </div>
+            {/* Video Table */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 text-black">
+              <h2 className="text-lg font-bold mb-4">รายการวิดีโอทั้งหมด</h2>
+              
+              {loading ? (
+                <TableSkeleton />
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border text-sm text-center text-black">
+                      <thead className="bg-gray-200">
+                        <tr>
+                          <th className="border px-2 py-1">ลำดับ</th>
+                          <th className="border px-2 py-1">ประเภท</th>
+                          <th className="border px-2 py-1">บทเรียน</th>
+                          <th className="border px-2 py-1">หัวข้อหลักสูตร</th>
+                          <th className="border px-2 py-1">รายละเอียด</th>
+                          <th className="border px-2 py-1">รูปหน้าปก</th>
+                          <th className="border px-2 py-1">จัดการ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedVideos.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="border px-2 py-4 text-center text-gray-500">
+                              {searchTerm || filterType !== 'all' ? 'ไม่พบวิดีโอที่ค้นหา' : 'ไม่มีข้อมูลวิดีโอ'}
                             </td>
                           </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                        ) : (
+                          paginatedVideos.map((video, idx) => {
+                            const videoId = extractYouTubeId(video.youtubeUrl);
+                            const thumbnailUrl = videoId ? getYouTubeThumbnail(videoId) : '';
+                            
+                            return (
+                              <tr key={video.id} className="bg-white">
+                                <td className="border px-2 py-1">
+                                  {(currentPage - 1) * itemsPerPage + idx + 1}
+                                </td>
+                                <td className="border px-2 py-1">
+                                  <span className={`px-2 py-1 rounded text-xs ${
+                                    video.courseType === 'HTML' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                                  }`}>
+                                    {video.courseType}
+                                  </span>
+                                </td>
+                                <td className="border px-2 py-1">
+                                  <span className="font-medium">{video.lesson}</span>
+                                </td>
+                                <td className="border px-2 py-1 max-w-xs">
+                                  <div className="truncate" title={video.title}>
+                                    {video.title}
+                                  </div>
+                                </td>
+                                <td className="border px-2 py-1 max-w-xs">
+                                  <div className="truncate" title={video.description}>
+                                    {video.description}
+                                  </div>
+                                </td>
+                                <td className="border px-2 py-1">
+                                  <Image 
+                                    src={video.image || thumbnailUrl || '/placeholder.png'} 
+                                    alt="รูป" 
+                                    width={64}
+                                    height={40}
+                                    className="w-16 h-10 object-cover mx-auto rounded"
+                                    unoptimized
+                                  />
+                                </td>
+                                <td className="border px-2 py-1">
+                                  <div className="flex gap-1 justify-center">
+                                    <button 
+                                      onClick={() => handleEdit(video)}
+                                      className="bg-yellow-400 px-2 py-1 rounded text-white hover:bg-yellow-500 text-xs"
+                                    >
+                                      แก้ไข
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDelete(video.id)}
+                                      className="bg-red-500 px-2 py-1 rounded text-white hover:bg-red-600 text-xs"
+                                    >
+                                      ลบ
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-6">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    ก่อนหน้า
-                  </button>
-                  
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`px-3 py-1 border rounded ${
-                        currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-white text-black'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                  
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    ถัดไป
-                  </button>
-                </div>
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-2 mt-6">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        ก่อนหน้า
+                      </button>
+                      
+                      {[...Array(totalPages)].map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`px-3 py-1 border rounded ${
+                            currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-white text-black'
+                          }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                      
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        ถัดไป
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
+            </div>
+          </div>
         </main>
       </div>
     </div>

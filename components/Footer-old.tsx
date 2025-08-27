@@ -12,7 +12,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-3xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              RUSLearning
+              DevLearning
             </h3>
             <p className="text-blue-100 text-lg leading-relaxed mb-6 max-w-md">
               เรียนรู้การพัฒนาเว็บไซต์อย่างมืออาชีพ ด้วยคอร์สเรียนคุณภาพสูง 
@@ -133,11 +133,45 @@ const Footer = () => {
             &copy; 2025 DevLearning. สงวนลิขสิทธิ์ทุกประการ
           </div>
           <div className="flex items-center space-x-6 text-sm text-blue-200">
+            <span>Made with ❤️ in Thailand</span>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
               <span>ระบบทำงานปกติ</span>
             </div>
           </div>
+        </div>
+      </div>
+    </footer>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-teal-800 transition duration-300"
+              >
+                {/* ตัวอย่าง Icon: แทนที่ด้วย SVG ของ Facebook, Twitter, Instagram ฯลฯ */}
+                {/* <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">...</svg> */}
+                Facebook
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-teal-800 transition duration-300"
+              >
+                Twitter
+              </a>
+              <a
+                href="#"
+                className="text-gray-700 hover:text-teal-800 transition duration-300"
+              >
+                Instagram
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* เส้นคั่นเป็นสีเทาอ่อนลง */}
+        <hr className="border-gray-300 my-8" />
+
+        {/* ข้อความลิขสิทธิ์เป็นสีเทาเข้ม */}
+        <div className="text-center text-gray-700 text-sm">
+          &copy; 2025 RUS-Learning. All rights reserved.
         </div>
       </div>
     </footer>

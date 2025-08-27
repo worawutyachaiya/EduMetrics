@@ -5,6 +5,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import RouteGuard from '@/components/routeGuard';
+import AdminSidebar from '@/components/AdminSidebar';
+import AdminHeader from '@/components/AdminHeader';
 
 interface Student {
   id: number;
@@ -68,6 +70,38 @@ function AdminStudentsContent() {
   const [showDetail, setShowDetail] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  // สำหรับค้นหาใน modal รายละเอียด
+  const [detailSearchTerm, setDetailSearchTerm] = useState("");
+  // ฟังก์ชันกรอง detailedResults ตาม detailSearchTerm (รองรับ pattern เช่น HTML, CSS, HTML1, CSS2, HTML บทที่ 1, CSS บทที่ 2)
+  const filteredDetailedResults = selectedStudent?.detailedResults.filter(result => {
+    if (!detailSearchTerm.trim()) return true;
+    const term = detailSearchTerm.trim().toLowerCase();
+    // split by comma, remove empty, trim
+    const terms = term.split(',').map(t => t.trim()).filter(Boolean);
+    // สร้าง pattern หลัก ๆ
+    return terms.some(t => {
+      // HTML, CSS
+      if (t === 'html' || t === 'css') {
+        return result.quizType.toLowerCase() === t;
+      }
+      // HTML1, CSS2
+      const matchTypeNum = t.match(/^(html|css)(\d+)$/);
+      if (matchTypeNum) {
+        return result.quizType.toLowerCase() === matchTypeNum[1] && result.lesson.toString() === matchTypeNum[2];
+      }
+      // HTML บทที่ 1, CSS บทที่ 2
+      const matchTypeLesson = t.match(/^(html|css)\s*บทที่\s*(\d+)$/);
+      if (matchTypeLesson) {
+        return result.quizType.toLowerCase() === matchTypeLesson[1] && result.lesson.toString() === matchTypeLesson[2];
+      }
+      // เฉพาะเลขบทเรียน เช่น 1, 2
+      if (/^\d+$/.test(t)) {
+        return result.lesson.toString() === t;
+      }
+      // เฉพาะประเภท (contains)
+      return result.quizType.toLowerCase().includes(t);
+    });
+  }) || [];
 
   const fetchStudents = useCallback(async () => {
     try {
@@ -135,10 +169,10 @@ function AdminStudentsContent() {
   };
 
   const getImprovementColor = (improvement: number) => {
-    if (improvement > 10) return 'text-green-600';
-    if (improvement > 0) return 'text-green-500';
-    if (improvement === 0) return 'text-gray-600';
-    return 'text-red-600';
+    if (improvement > 10) return 'text-green-600 bg-green-100';
+    if (improvement > 0) return 'text-green-600 bg-green-100';
+    if (improvement === 0) return 'text-gray-600 bg-gray-100';
+    return 'text-red-600 bg-red-100';
   };
 
   const getImprovementIcon = (improvement: number) => {
@@ -148,271 +182,337 @@ function AdminStudentsContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col text-black">
-      {/* Header */}
-      <header className="bg-white/50 backdrop-blur-sm px-6 py-4 flex">
-        <div className="w-full flex items-center justify-between gap-4">
-          <div className="flex items-center space-x-4">
-            <span className="border px-4 py-1 rounded-full text-black">Admin</span>
-            <span className="text-gray-700">
-              สวัสดี, {user?.firstName} {user?.lastName}
-            </span>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            ออกจากระบบ
-          </button>
-        </div>
-      </header>
-
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <AdminHeader 
+        user={user}
+        title="ข้อมูลนักเรียน"
+        onLogout={handleLogout}
+      />
+      
       <div className="flex flex-1">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white/50 backdrop-blur-sm p-4 shadow text-black">
-          <ul className="space-y-2">
-            <li className="pl-4">
-              <a href="/admin/quiz" className="hover:text-blue-600">จัดการข้อสอบ</a>
-            </li>
-            <li className="pl-4">
-              <a href="/admin/video" className="hover:text-blue-600">จัดการวิดีโอ</a>
-            </li>
-            <li className="pl-4 font-bold text-blue-600">ข้อมูลนักเรียน</li>
-          </ul>
-        </aside>
-
-        {/* Main */}
-        <main className="flex-1 p-8 bg-white/70 backdrop-blur-sm text-black shadow">
-          <h1 className="text-2xl font-bold mb-6">ข้อมูลนักเรียนและผลการเรียน</h1>
-
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
-          {/* Filters */}
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <h3 className="font-semibold mb-3">ตัวกรองข้อมูล</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Academic Year Filter */}
-              <div>
-                <label className="block mb-1 text-sm font-medium">ปีการศึกษา</label>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                  className="w-full border px-3 py-2 rounded text-black"
-                >
-                  <option value="all">ทุกปีการศึกษา</option>
-                  {academicYears.map(year => (
-                    <option key={year} value={year.toString()}>{year + 543}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Course Type Filter */}
-              <div>
-                <label className="block mb-1 text-sm font-medium">ประเภทคอร์ส</label>
-                <select
-                  value={selectedCourse}
-                  onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="w-full border px-3 py-2 rounded text-black"
-                >
-                  <option value="all">ทั้งหมด</option>
-                  <option value="HTML">HTML</option>
-                  <option value="CSS">CSS</option>
-                </select>
-              </div>
-
-              {/* Search */}
-              <div className="md:col-span-2">
-                <label className="block mb-1 text-sm font-medium">ค้นหา (ชื่อ หรือรหัสนักเรียน)</label>
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="กรอกชื่อหรือรหัสนักเรียน..."
-                  className="w-full border px-3 py-2 rounded text-black"
-                />
-              </div>
+        <AdminSidebar currentPage="students" />
+        
+        <main className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">ข้อมูลนักเรียนและผลการเรียน</h1>
+              <p className="text-gray-600">จัดการและตรวจสอบผลการเรียนของนักเรียน</p>
             </div>
 
-            <div className="mt-3 text-sm text-gray-600">
-              แสดงผล: {students.length} คน
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4">
+                <div className="flex">
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Filters */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">ตัวกรองข้อมูล</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {/* Academic Year Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">ปีการศึกษา</label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all">ทุกปีการศึกษา</option>
+                    {academicYears.map(year => (
+                      <option key={year} value={year.toString()}>{year + 543}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Course Type Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">ประเภทคอร์ส</label>
+                  <select
+                    value={selectedCourse}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all">ทั้งหมด</option>
+                    <option value="HTML">HTML</option>
+                    <option value="CSS">CSS</option>
+                  </select>
+                </div>
+
+                {/* Search */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">ค้นหา (ชื่อ หรือรหัสนักเรียน)</label>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="กรอกชื่อหรือรหัสนักเรียน..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-sm text-gray-600">
+                  แสดงผล: <span className="font-semibold text-gray-900">{students.length}</span> คน
+                </span>
+              </div>
+            </div>
+
+            {/* Students Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              {loading ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="text-gray-600">กำลังโหลดข้อมูล...</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสนักเรียน</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-สกุล</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ปีการศึกษา</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">HTML เฉลี่ย</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">CSS เฉลี่ย</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">การพัฒนา HTML</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">การพัฒนา CSS</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ความสมบูรณ์</th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {students.length === 0 ? (
+                        <tr>
+                          <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                            <div className="flex flex-col items-center">
+                              <div className="text-4xl mb-2">📋</div>
+                              <p className="text-lg font-medium">ไม่มีข้อมูลนักเรียน</p>
+                              <p className="text-sm">ไม่พบข้อมูลนักเรียนที่ตรงตามเงื่อนไข</p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        students.map((student) => (
+                          <tr key={student.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="text-sm font-mono text-gray-900">{student.studentId}</span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="text-sm font-medium text-gray-900">
+                                {student.firstName} {student.lastName}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <span className="text-sm text-gray-900">{student.academicYear + 543}</span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <div className="text-sm">
+                                <div className="text-gray-600">ก่อน: {student.stats.html.avgPretest}%</div>
+                                <div className="font-semibold text-gray-900">หลัง: {student.stats.html.avgPosttest}%</div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <div className="text-sm">
+                                <div className="text-gray-600">ก่อน: {student.stats.css.avgPretest}%</div>
+                                <div className="font-semibold text-gray-900">หลัง: {student.stats.css.avgPosttest}%</div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImprovementColor(student.stats.html.improvement)}`}>
+                                {getImprovementIcon(student.stats.html.improvement)}
+                                {Math.abs(student.stats.html.improvement)}%
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImprovementColor(student.stats.css.improvement)}`}>
+                                {getImprovementIcon(student.stats.css.improvement)}
+                                {Math.abs(student.stats.css.improvement)}%
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <div className="text-xs space-y-1">
+                                <div className="text-gray-600">HTML: {getCompletionRate(student.stats.html)}%</div>
+                                <div className="text-gray-600">CSS: {getCompletionRate(student.stats.css)}%</div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <button
+                                onClick={() => fetchStudentDetail(student.studentId)}
+                                disabled={detailLoading}
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                              >
+                                รายละเอียด
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Students Table */}
-          {loading ? (
-            <div className="text-center py-8">กำลังโหลด...</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border text-sm">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="border px-3 py-2 text-left">รหัสนักเรียน</th>
-                    <th className="border px-3 py-2 text-left">ชื่อ-สกุล</th>
-                    <th className="border px-3 py-2 text-center">ปีการศึกษา</th>
-                    <th className="border px-3 py-2 text-center">HTML เฉลี่ย</th>
-                    <th className="border px-3 py-2 text-center">CSS เฉลี่ย</th>
-                    <th className="border px-3 py-2 text-center">การพัฒนา HTML</th>
-                    <th className="border px-3 py-2 text-center">การพัฒนา CSS</th>
-                    <th className="border px-3 py-2 text-center">ความสมบูรณ์</th>
-                    <th className="border px-3 py-2 text-center">จัดการ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="border px-3 py-8 text-center text-gray-500">
-                        ไม่มีข้อมูลนักเรียนที่ตรงตามเงื่อนไข
-                      </td>
-                    </tr>
-                  ) : (
-                    students.map((student) => (
-                      <tr key={student.id} className="hover:bg-gray-50">
-                        <td className="border px-3 py-2 font-mono">{student.studentId}</td>
-                        <td className="border px-3 py-2">
-                          {student.firstName} {student.lastName}
-                        </td>
-                        <td className="border px-3 py-2 text-center">{student.academicYear + 543}</td>
-                        <td className="border px-3 py-2 text-center">
-                          <div className="text-sm">
-                            <div>ก่อน: {student.stats.html.avgPretest}%</div>
-                            <div className="font-semibold">หลัง: {student.stats.html.avgPosttest}%</div>
-                          </div>
-                        </td>
-                        <td className="border px-3 py-2 text-center">
-                          <div className="text-sm">
-                            <div>ก่อน: {student.stats.css.avgPretest}%</div>
-                            <div className="font-semibold">หลัง: {student.stats.css.avgPosttest}%</div>
-                          </div>
-                        </td>
-                        <td className="border px-3 py-2 text-center">
-                          <span className={`font-semibold ${getImprovementColor(student.stats.html.improvement)}`}>
-                            {getImprovementIcon(student.stats.html.improvement)}
-                            {Math.abs(student.stats.html.improvement)}%
-                          </span>
-                        </td>
-                        <td className="border px-3 py-2 text-center">
-                          <span className={`font-semibold ${getImprovementColor(student.stats.css.improvement)}`}>
-                            {getImprovementIcon(student.stats.css.improvement)}
-                            {Math.abs(student.stats.css.improvement)}%
-                          </span>
-                        </td>
-                        <td className="border px-3 py-2 text-center">
-                          <div className="text-xs">
-                            <div>HTML: {getCompletionRate(student.stats.html)}%</div>
-                            <div>CSS: {getCompletionRate(student.stats.css)}%</div>
-                          </div>
-                        </td>
-                        <td className="border px-3 py-2 text-center">
-                          <button
-                            onClick={() => fetchStudentDetail(student.studentId)}
-                            disabled={detailLoading}
-                            className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 disabled:bg-gray-400"
-                          >
-                            รายละเอียด
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
         </main>
       </div>
 
-      {/* Detail Modal */}
+      {/* Student Detail Modal */}
       {showDetail && selectedStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+          }}
+        >
+          <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden border border-gray-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-900">
                   รายละเอียดการเรียน - {selectedStudent.firstName} {selectedStudent.lastName}
                 </h2>
                 <button
                   onClick={() => setShowDetail(false)}
-                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  ปิด
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
+            </div>
 
-              <div className="mb-4 p-4 bg-gray-50 rounded">
-                <p><strong>รหัสนักเรียน:</strong> {selectedStudent.studentId}</p>
-                <p><strong>ปีการศึกษา:</strong> {selectedStudent.academicYear + 543}</p>
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {/* Student Info */}
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">รหัสนักเรียน:</span>
+                    <span className="ml-2 text-sm font-mono text-gray-900">{selectedStudent.studentId}</span>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">ปีการศึกษา:</span>
+                    <span className="ml-2 text-sm text-gray-900">{selectedStudent.academicYear + 543}</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid gap-6">
-                {selectedStudent.detailedResults.map((result, index) => (
-                  <div key={index} className="border rounded-lg p-4">
-                    <h3 className="text-lg font-semibold mb-4">
-                      {result.quizType} - บทเรียนที่ {result.lesson}
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Pretest */}
-                      <div className="bg-blue-50 p-4 rounded">
-                        <h4 className="font-semibold text-blue-800 mb-2">ก่อนเรียน</h4>
-                        {result.pretest ? (
-                          <div>
-                            <p>คะแนน: {result.pretest.score}/{result.pretest.totalScore}</p>
-                            <p>เปอร์เซ็นต์: {result.pretest.percentage}%</p>
-                            <p className="text-sm text-gray-600">
-                              วันที่: {new Date(result.pretest.completedAt).toLocaleDateString('th-TH')}
-                            </p>
-                          </div>
-                        ) : (
-                          <p className="text-gray-500">ยังไม่ได้ทำข้อสอบ</p>
-                        )}
-                      </div>
+              {/* Search in detail modal */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-black mb-2">
+                  ค้นหา (ประเภทหรือบทเรียน เช่น HTML, CSS, HTML1, CSS2, HTML บทที่ 1, CSS บทที่ 2)
+                </label>
+                <input
+                  type="text"
+                  value={detailSearchTerm}
+                  onChange={e => setDetailSearchTerm(e.target.value)}
+                  placeholder="ค้นหาด้วยประเภทหรือเลขบทเรียน..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+                />
+              </div>
 
-                      {/* Posttests */}
-                      <div className="bg-green-50 p-4 rounded">
-                        <h4 className="font-semibold text-green-800 mb-2">
-                          หลังเรียน ({result.posttests.length} ครั้ง)
-                        </h4>
-                        {result.posttests.length > 0 ? (
-                          <div className="space-y-2">
-                            {result.posttests.slice(0, 3).map((posttest: QuizResult, idx: number) => (
-                              <div key={idx} className="text-sm">
-                                <p>ครั้งที่ {result.posttests.length - idx}: {posttest.score}/{posttest.totalScore} ({posttest.percentage}%)</p>
-                                <p className="text-xs text-gray-600">
-                                  {new Date(posttest.completedAt).toLocaleDateString('th-TH')}
-                                </p>
+              {/* Results */}
+              <div className="space-y-6">
+                {filteredDetailedResults.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <div className="text-4xl mb-2">🔍</div>
+                    <p className="text-lg font-medium">ไม่พบข้อมูลที่ค้นหา</p>
+                  </div>
+                ) : (
+                  filteredDetailedResults.map((result, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        {result.quizType} - บทเรียนที่ {result.lesson}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Pretest */}
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            ก่อนเรียน
+                          </h4>
+                          {result.pretest ? (
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">คะแนน:</span>
+                                <span className="text-sm font-medium">{result.pretest.score}/{result.pretest.totalScore}</span>
                               </div>
-                            ))}
-                            {result.posttests.length > 3 && (
-                              <p className="text-xs text-gray-500">
-                                และอีก {result.posttests.length - 3} ครั้ง...
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-gray-500">ยังไม่ได้ทำข้อสอบ</p>
-                        )}
-                      </div>
-                    </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">เปอร์เซ็นต์:</span>
+                                <span className="text-sm font-medium">{result.pretest.percentage}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-gray-600">วันที่:</span>
+                                <span className="text-sm">{new Date(result.pretest.completedAt).toLocaleDateString('th-TH')}</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 text-sm">ยังไม่ได้ทำข้อสอบ</p>
+                          )}
+                        </div>
 
-                    {/* Improvement indicator */}
-                    {result.pretest && result.posttests.length > 0 && (
-                      <div className="mt-4 p-3 bg-gray-100 rounded">
-                        <div className="flex justify-between items-center">
-                          <span>การพัฒนา:</span>
-                          <span className={`font-bold ${getImprovementColor(result.posttests[0].percentage - result.pretest.percentage)}`}>
-                            {getImprovementIcon(result.posttests[0].percentage - result.pretest.percentage)}
-                            {Math.abs(result.posttests[0].percentage - result.pretest.percentage).toFixed(1)}%
-                          </span>
+                        {/* Posttests */}
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <h4 className="font-semibold text-green-800 mb-3 flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                            หลังเรียน ({result.posttests.length} ครั้ง)
+                          </h4>
+                          {result.posttests.length > 0 ? (
+                            <div className="space-y-3">
+                              {result.posttests.slice(0, 3).map((posttest: QuizResult, idx: number) => (
+                                <div key={idx} className="bg-white rounded p-3 border border-green-200">
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-xs font-medium text-gray-600">ครั้งที่ {result.posttests.length - idx}</span>
+                                    <span className="text-sm font-semibold">{posttest.score}/{posttest.totalScore} ({posttest.percentage}%)</span>
+                                  </div>
+                                  <p className="text-xs text-gray-500">
+                                    {new Date(posttest.completedAt).toLocaleDateString('th-TH')}
+                                  </p>
+                                </div>
+                              ))}
+                              {result.posttests.length > 3 && (
+                                <p className="text-xs text-gray-500 text-center">
+                                  และอีก {result.posttests.length - 3} ครั้ง...
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 text-sm">ยังไม่ได้ทำข้อสอบ</p>
+                          )}
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {/* Improvement indicator */}
+                      {result.pretest && result.posttests.length > 0 && (
+                        <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium text-gray-700">การพัฒนา:</span>
+                            <span className={`font-bold text-lg ${getImprovementColor(result.posttests[0].percentage - result.pretest.percentage)}`}>
+                              {getImprovementIcon(result.posttests[0].percentage - result.pretest.percentage)}
+                              {Math.abs(result.posttests[0].percentage - result.pretest.percentage).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

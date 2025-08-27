@@ -73,21 +73,23 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white bg-opacity-70 backdrop-blur-sm text-gray-700 p-4 rounded-xl shadow-lg m-4">
-      <div className="container mx-auto flex justify-between items-center flex-wrap">
+    <nav className="bg-white/80 backdrop-blur-xl border-b border-gray-200/50 sticky top-0 z-50 shadow-lg">
+      <div className="container mx-auto flex justify-between items-center flex-wrap px-6 py-4">
         {/* Logo */}
         <div>
-          <h1 className="text-2xl font-bold text-teal-700">Logo</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            RUSLearning
+          </h1>
         </div>
 
         {/* Hamburger Icon สำหรับมือถือ */}
         <div className="block lg:hidden">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center px-3 py-2 border rounded text-gray-700 border-gray-400 hover:text-teal-700 hover:border-teal-700 transition-colors duration-200"
+            className="flex items-center px-3 py-2 border rounded-xl text-gray-700 border-gray-300 hover:text-blue-600 hover:border-blue-500 transition-all duration-300"
           >
             <svg
-              className="fill-current h-4 w-4"
+              className="fill-current h-5 w-5"
               viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -103,11 +105,11 @@ const Navbar = () => {
             isOpen ? "block" : "hidden"
           }`}
         >
-          <ul className="lg:flex flex-grow justify-center lg:space-x-20 mt-4 lg:mt-0">
+          <ul className="lg:flex flex-grow justify-center lg:space-x-8 mt-4 lg:mt-0">
             <li>
               <Link
                 href="/"
-                className="block py-2 hover:text-teal-700 transition-colors duration-200"
+                className="block py-3 px-4 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 font-medium"
               >
                 หน้าแรก
               </Link>
@@ -115,7 +117,7 @@ const Navbar = () => {
             <li>
               <Link
                 href="/couse"
-                className="block py-2 hover:text-teal-700 transition-colors duration-200"
+                className="block py-3 px-4 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 font-medium"
               >
                 คอร์สเรียน
               </Link>
@@ -123,7 +125,7 @@ const Navbar = () => {
             <li>
               <Link
                 href="/"
-                className="block py-2 hover:text-teal-700 transition-colors duration-200"
+                className="block py-3 px-4 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 font-medium"
               >
                 ข่าวสาร
               </Link>
@@ -131,7 +133,7 @@ const Navbar = () => {
             <li>
               <Link
                 href="/about"
-                className="block py-2 hover:text-teal-700 transition-colors duration-200"
+                className="block py-3 px-4 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 font-medium"
               >
                 เกี่ยวกับเรา
               </Link>
@@ -141,10 +143,10 @@ const Navbar = () => {
           {/* ช่องค้นหาและส่วนผู้ใช้ */}
           <div className="flex items-center space-x-6 mt-4 lg:mt-0 flex-col lg:flex-row w-full lg:w-auto">
             {/* ช่องค้นหา */}
-            <div className="relative flex items-center w-full lg:w-64 mb-4 lg:mb-0">
+            <div className="relative flex items-center w-full lg:w-72 mb-4 lg:mb-0">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="absolute left-3 text-gray-500 h-5 w-5"
+                className="absolute left-4 text-gray-400 h-5 w-5"
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -154,8 +156,10 @@ const Navbar = () => {
               </svg>
               <input
                 type="text"
-                placeholder="ค้นหา..."
-                className="w-full pl-10 pr-4 py-2 bg-gray-100 bg-opacity-80 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-800 placeholder-gray-500"
+                placeholder="ค้นหาคอร์สเรียน..."
+                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl shadow-sm 
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
+                         text-gray-800 placeholder-gray-500 transition-all duration-300"
               />
             </div>
             
@@ -163,7 +167,7 @@ const Navbar = () => {
             <div className="flex items-center">
               {isLoading ? (
                 // แสดง loading state
-                <div className="bg-gray-400 text-white font-bold py-2 px-6 rounded-lg animate-pulse">
+                <div className="bg-gradient-to-r from-blue-400 to-purple-400 text-white font-semibold py-3 px-6 rounded-2xl animate-pulse">
                   กำลังโหลด...
                 </div>
               ) : isLoggedIn && userData ? (
@@ -171,11 +175,12 @@ const Navbar = () => {
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-3 bg-gradient-to-r from-teal-50 to-teal-100 hover:from-teal-100 hover:to-teal-200 border border-teal-200 text-teal-700 px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
+                    className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 
+                             border border-blue-200 text-blue-700 px-4 py-3 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl group"
                   >
                     {/* User Icon */}
-                    <div className="flex items-center justify-center w-8 h-8 bg-teal-500 rounded-md">
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl">
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                       </svg>
                     </div>
@@ -192,9 +197,9 @@ const Navbar = () => {
                     
                     {/* Dropdown arrow */}
                     <svg
-                      className={`w-4 h-4 transition-transform duration-200 ${
+                      className={`w-4 h-4 transition-transform duration-300 ${
                         showUserMenu ? 'rotate-180' : ''
-                      } group-hover:text-teal-600`}
+                      } group-hover:text-blue-600`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -208,17 +213,18 @@ const Navbar = () => {
 
                   {/* Dropdown Menu */}
                   {showUserMenu && (
-                    <div className="absolute right-0 mt-3 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 py-3 z-50 animate-in slide-in-from-top-2 duration-200">
+                    <div className="absolute right-0 mt-3 w-80 bg-white rounded-3xl shadow-2xl border border-gray-100 py-4 z-50 
+                                  animate-in slide-in-from-top-2 duration-300 backdrop-blur-xl">
                       {/* User Header */}
-                      <div className="px-5 py-3 border-b border-gray-100">
-                        <div className="flex items-center space-x-3">
-                          <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg">
-                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="px-6 py-4 border-b border-gray-100">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl">
+                            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                             </svg>
                           </div>
                           <div className="flex-1">
-                            <div className="font-semibold text-gray-900 text-base">
+                            <div className="font-bold text-gray-900 text-lg">
                               {userData.firstName} {userData.lastName}
                             </div>
                             <div className="text-sm text-gray-600">
@@ -235,27 +241,25 @@ const Navbar = () => {
                       <div className="py-2">
                         <Link
                           href="/profile"
-                          className="flex items-center space-x-3 px-5 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                          className="flex items-center space-x-4 px-6 py-4 text-gray-700 hover:bg-gray-50 transition-all duration-300 rounded-2xl mx-2"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          <div className="w-5 h-5 text-gray-400">
+                          <div className="w-6 h-6 text-gray-400">
                             <svg fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                             </svg>
                           </div>
                           <span className="font-medium">จัดการโปรไฟล์</span>
                         </Link>
-                        
-
                       </div>
                       
                       {/* Logout section */}
                       <div className="border-t border-gray-100 pt-2">
                         <button
                           onClick={handleLogout}
-                          className="flex items-center space-x-3 w-full px-5 py-3 text-red-600 hover:bg-red-50 transition-colors duration-200"
+                          className="flex items-center space-x-4 w-full px-6 py-4 text-red-600 hover:bg-red-50 transition-all duration-300 rounded-2xl mx-2"
                         >
-                          <div className="w-5 h-5">
+                          <div className="w-6 h-6">
                             <svg fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
                             </svg>
@@ -270,12 +274,15 @@ const Navbar = () => {
                 // แสดงปุ่ม Login และ Register เมื่อยังไม่ได้ล็อคอิน
                 <div className="flex items-center space-x-3">
                   <Link href="/register">
-                    <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-5 rounded-lg border border-gray-200 transition-all duration-200 hover:shadow-md">
+                    <button className="bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-3 px-6 rounded-2xl 
+                                     border border-gray-200 transition-all duration-300 hover:shadow-lg">
                       สมัครสมาชิก
                     </button>
                   </Link>
                   <Link href="/login">
-                    <button className="bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-medium py-2 px-5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                    <button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 
+                                     text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-300 shadow-lg 
+                                     hover:shadow-xl transform hover:scale-105">
                       เข้าสู่ระบบ
                     </button>
                   </Link>

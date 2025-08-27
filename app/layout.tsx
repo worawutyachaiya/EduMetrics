@@ -15,14 +15,12 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
 
   return (
     <html>
-      <body style={{ 
-        backgroundImage: "url('/img/bg-green.jpg')", 
-        backgroundSize: "cover", 
-        backgroundAttachment: "fixed" 
-      }}>
+      <body className="antialiased">
         {!hideNavFooter && <Navbar />}
         <AuthProvider>
-          {children}
+          <main className="min-h-screen">
+            {children}
+          </main>
         </AuthProvider>
         {!hideNavFooter && <Footer />}
       </body>

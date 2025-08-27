@@ -40,100 +40,111 @@ const courses: Course[] = [
 
 export default function CourseCardList() {
     return (
-        <div className="container mx-auto p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10 mb-6">
+        <div className="container mx-auto p-4 md:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* HTML5 Course Card */}
-            <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 bg-white
-                            hover:shadow-xl hover:shadow-teal-100/50 transform hover:-translate-y-2 transition-all duration-300 ease-in-out">
-                <div className="w-full h-[200px] relative bg-white flex items-center justify-center p-4">
+            <div className="group relative bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100
+                            hover:shadow-2xl hover:shadow-blue-500/20 transform hover:-translate-y-3 transition-all duration-500 ease-out">
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500"></div>
+                
+                <div className="relative w-full h-[200px] bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
                     <Image
                         src={courses[0].image}
                         alt={courses[0].title}
                         width={200}
                         height={200}
-                        className="object-contain"
+                        className="object-contain group-hover:scale-110 transition-transform duration-500"
                     />
                 </div>
 
-                <div className="p-6">
-                    <h3 className="text-2xl font-bold mb-2 text-teal-800">
+                <div className="relative p-6">
+                    <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                         {courses[0].title}
                     </h3>
-                    <p className="text-gray-700 mb-4 text-base leading-relaxed">
+                    <p className="text-gray-600 mb-6 text-base leading-relaxed">
                         {courses[0].description}
                     </p>
-                    <div className="flex justify-between items-center mt-4">
-                        <span className="text-teal-600 font-bold text-xl">
+                    <div className="flex justify-between items-center">
+                        <span className="text-2xl font-bold bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
                             {courses[0].price}
                         </span>
                         <Link href={courses[0].link}>
-                            <h4 className="bg-teal-600 text-white px-5 py-2 rounded-full hover:bg-teal-700 transition-colors duration-300
-                                        shadow-md hover:shadow-lg cursor-pointer">
+                            <button className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-2xl font-semibold
+                                            hover:from-orange-600 hover:to-red-600 transform hover:scale-105 transition-all duration-300
+                                            shadow-lg hover:shadow-orange-500/25">
                                 {courses[0].buttonText}
-                            </h4>
+                            </button>
                         </Link>
                     </div>
                 </div>
             </div>
 
             {/* CSS Course Card */}
-            <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 bg-white
-                            hover:shadow-xl hover:shadow-teal-100/50 transform hover:-translate-y-2 transition-all duration-300 ease-in-out">
-                <div className="w-full h-[200px] relative bg-white flex items-center justify-center p-4">
+            <div className="group relative bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100
+                            hover:shadow-2xl hover:shadow-blue-500/20 transform hover:-translate-y-3 transition-all duration-500 ease-out">
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500"></div>
+                
+                <div className="relative w-full h-[200px] bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
                     <Image
                         src={courses[1].image}
                         alt={courses[1].title}
                         width={200}
                         height={200}
-                        className="object-contain"
+                        className="object-contain group-hover:scale-110 transition-transform duration-500"
                     />
                 </div>
 
-                <div className="p-6">
-                    <h3 className="text-2xl font-bold mb-2 text-teal-800">
+                <div className="relative p-6">
+                    <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                         {courses[1].title}
                     </h3>
-                    <p className="text-gray-700 mb-4 text-base leading-relaxed">
+                    <p className="text-gray-600 mb-6 text-base leading-relaxed">
                         {courses[1].description}
                     </p>
-                    <div className="flex justify-between items-center mt-4">
-                        <span className="text-teal-600 font-bold text-xl">
+                    <div className="flex justify-between items-center">
+                        <span className="text-2xl font-bold bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
                             {courses[1].price}
                         </span>
                         <Link href={courses[1].link}>
-                            <h4 className="bg-teal-600 text-white px-5 py-2 rounded-full hover:bg-teal-700 transition-colors duration-300
-                                        shadow-md hover:shadow-lg cursor-pointer">
+                            <button className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-3 rounded-2xl font-semibold
+                                            hover:from-blue-600 hover:to-indigo-600 transform hover:scale-105 transition-all duration-300
+                                            shadow-lg hover:shadow-blue-500/25">
                                 {courses[1].buttonText}
-                            </h4>
+                            </button>
                         </Link>
                     </div>
                 </div>
             </div>
 
             {/* JavaScript Course Card */}
-            <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 bg-white
-                            hover:shadow-xl hover:shadow-teal-100/50 transform hover:-translate-y-2 transition-all duration-300 ease-in-out">
-                <div className="w-full h-[200px] relative bg-white flex items-center justify-center p-4">
+            <div className="group relative bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100
+                            hover:shadow-2xl hover:shadow-blue-500/20 transform hover:-translate-y-3 transition-all duration-500 ease-out">
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500"></div>
+                
+                <div className="relative w-full h-[200px] bg-gradient-to-br from-yellow-50 to-amber-50 flex items-center justify-center p-4">
                     <Image
                         src={courses[2].image}
                         alt={courses[2].title}
                         width={200}
                         height={200}
-                        className="object-contain"
+                        className="object-contain group-hover:scale-110 transition-transform duration-500"
                     />
                 </div>
 
-                <div className="p-6">
-                    <h3 className="text-2xl font-bold mb-2 text-teal-800">
+                <div className="relative p-6">
+                    <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-yellow-600 to-amber-600 bg-clip-text text-transparent">
                         {courses[2].title}
                     </h3>
-                    <p className="text-gray-700 mb-4 text-base leading-relaxed">
+                    <p className="text-gray-600 mb-6 text-base leading-relaxed">
                         {courses[2].description}
                     </p>
-                    <div className="flex justify-between items-center mt-4">
-                        <span className="text-teal-600 font-bold text-xl">
+                    <div className="flex justify-between items-center">
+                        <span className="text-2xl font-bold bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
                             {courses[2].price}
                         </span>
-                        <span className="text-gray-500 px-5 py-2 rounded-full bg-gray-100 cursor-not-allowed">
+                        <span className="text-gray-400 px-6 py-3 rounded-2xl bg-gray-100 font-semibold cursor-not-allowed">
                             {courses[2].buttonText}
                         </span>
                     </div>

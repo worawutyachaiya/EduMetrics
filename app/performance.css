@@ -1,0 +1,34 @@
+/* Performance Optimizations */
+
+/* Use GPU acceleration for transforms */
+.gpu-accelerated {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Optimize animations */
+.smooth-animation {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Optimize gradient performance */
+.optimized-gradient {
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Contain layout shifts */
+.layout-contained {
+  contain: layout style paint;
+}
