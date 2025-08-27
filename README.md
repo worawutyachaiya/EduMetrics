@@ -29,13 +29,13 @@
 
 ## สถาปัตยกรรมของระบบ
 
-### เทคโนโลยีด้านหน้า (Frontend Technologies)
+### เทคโนโลยีหน้าบ้าน (Frontend Technologies)
 - **Next.js 15.3.4** - React Framework สำหรับการพัฒนาเว็บแอปพลิเคชัน
 - **TypeScript** - ภาษาโปรแกรมมิ่งที่เสริมความปลอดภัยในการเขียนโค้ด
 - **Tailwind CSS 4** - Framework สำหรับการออกแบบส่วนติดต่อผู้ใช้
 - **Lucide React** - ไลบรารีไอคอนสำหรับส่วนติดต่อผู้ใช้
 
-### เทคโนโลยีด้านหลัง (Backend Technologies)
+### เทคโนโลยีหลังบ้าน (Backend Technologies)
 - **Next.js API Routes** - การพัฒนา RESTful API
 - **Prisma ORM** - เครื่องมือจัดการฐานข้อมูล
 - **PostgreSQL** - ระบบจัดการฐานข้อมูลเชิงสัมพันธ์
