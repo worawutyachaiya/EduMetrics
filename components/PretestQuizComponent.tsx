@@ -88,6 +88,8 @@ export default function PretestQuizComponent({ type, title }: PretestQuizProps) 
   useEffect(() => {
     if (currentLesson) {
       fetchQuizzes();
+      // เลื่อนหน้าจอกลับขึ้นไปด้านบนเมื่อเปลี่ยนบทเรียน
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentLesson, fetchQuizzes]);
 
