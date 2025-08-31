@@ -16,7 +16,8 @@ const nextConfig: NextConfig = {
       'localhost', 
       'img.youtube.com',
       'i.ytimg.com',
-      'via.placeholder.com'
+      'via.placeholder.com',
+      'res.cloudinary.com'
     ],
     remotePatterns: [
       {
@@ -28,6 +29,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'i.ytimg.com',
         pathname: '/vi/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
       },
       {
         protocol: 'http',

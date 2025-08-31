@@ -42,7 +42,8 @@ export const uploadImage = async (file: Buffer, filename: string) => {
       {
         resource_type: 'image',
         folder: 'course-images',
-        public_id: filename,
+  public_id: filename,
+  overwrite: true,
         transformation: [
           { width: 400, height: 300, crop: 'fill' }
         ]

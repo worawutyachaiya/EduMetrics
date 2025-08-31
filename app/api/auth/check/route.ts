@@ -2,22 +2,23 @@
 import { NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
+import { prisma } from '@/lib/prisma'
 
 // Type for JWT payload
 interface JWTPayload {
-  userId: number;
-  studentId: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  iat?: number;
-  exp?: number;
+  userId: number
+  studentId: string
+  firstName: string
+  lastName: string
+  role: string
+  iat?: number
+  exp?: number
 }
 
 export async function GET() {
   try {
-    const cookieStore = cookies()
-    const token = (await cookieStore).get('token')
+  const cookieStore = cookies()
+  const token = (await cookieStore).get('token')
 
     if (!token) {
       return NextResponse.json(
@@ -26,18 +27,31 @@ export async function GET() {
       )
     }
 
-    const decoded = jwt.verify(token.value, process.env.JWT_SECRET || 'your-secret-key') as JWTPayload
+    if (!process.env.JWT_SECRET) {
+      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 })
+    }
 
-    return NextResponse.json({
-      user: {
-        id: decoded.userId,
-        studentId: decoded.studentId,
-        firstName: decoded.firstName,
-        lastName: decoded.lastName,
-        role: decoded.role
+    const decoded = jwt.verify(token.value, process.env.JWT_SECRET) as JWTPayload
+
+    // Load fresh user info to include email and avatarUrl
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        studentId: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        avatarUrl: true,
       },
-      isAuthenticated: true
     })
+
+    if (!user) {
+      return NextResponse.json({ error: 'ไม่พบผู้ใช้' }, { status: 401 })
+    }
+
+    return NextResponse.json({ user, isAuthenticated: true })
 
   } catch (error) {
     console.error('Token verification failed:', error)

@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       orderBy: { lesson: 'asc' }
     });
 
-    const availableLessons = quizzes.map(quiz => quiz.lesson);
+  const availableLessons = quizzes.map((quiz: { lesson: number }) => quiz.lesson);
     
     return NextResponse.json(availableLessons);
   } catch (error) {

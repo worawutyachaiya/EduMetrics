@@ -42,6 +42,17 @@ interface GroupedResult {
   posttests: QuizResult[];
 }
 
+// For list view mapping
+type StudentWithResults = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  studentId: string;
+  academicYear: number;
+  createdAt: Date;
+  quizResults: QuizResult[];
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -102,8 +113,8 @@ export async function GET(request: NextRequest) {
       ]
     })
 
-    // Process data to include statistics
-    const studentsWithStats = students.map(student => {
+  // Process data to include statistics
+  const studentsWithStats = students.map((student: StudentWithResults) => {
       const htmlResults = student.quizResults.filter(r => r.quizType === 'HTML')
       const cssResults = student.quizResults.filter(r => r.quizType === 'CSS')
       
@@ -155,7 +166,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       students: studentsWithStats,
-      academicYears: academicYears.map(ay => ay.academicYear)
+      academicYears: academicYears.map((ay: { academicYear: number | null }) => ay.academicYear)
     })
   } catch (error) {
     console.error('Error fetching students data:', error)
@@ -217,8 +228,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Group results by course type and lesson
-    const groupedResults = student.quizResults.reduce((acc: Record<string, GroupedResult>, result) => {
+  // Group results by course type and lesson
+  const groupedResults = student.quizResults.reduce((acc: Record<string, GroupedResult>, result: QuizResult) => {
       const key = `${result.quizType}-${result.lesson}`
       if (!acc[key]) {
         acc[key] = {

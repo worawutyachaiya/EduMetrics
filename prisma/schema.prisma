@@ -20,6 +20,10 @@ model User {
   role                 String    @default("student")
   isActive             Boolean   @default(true)
   
+  // Avatar profile image (optional)
+  avatarUrl            String?
+  avatarPublicId       String?
+  
   // Password reset fields
   resetToken           String?   
   resetTokenExpiry     DateTime? 
@@ -105,6 +109,7 @@ model Video {
   description String    @db.Text
   youtubeUrl  String
   image       String?
+  imagePublicId String?
   courseType  String    
   lesson      Int       
   categoryId  Int?
