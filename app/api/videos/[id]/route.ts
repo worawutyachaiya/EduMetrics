@@ -1,14 +1,10 @@
 // app/api/videos/[id]/route.ts - Update cover image handling to Cloudinary
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { deleteFromCloudinary, uploadImage } from '@/lib/cloudinary';
 import { prisma } from '@/lib/prisma';
 
 // Types
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
+type RouteParams = { params: Promise<{ id: string }> };
 
 interface UpdateData {
   title: string;
@@ -20,9 +16,9 @@ interface UpdateData {
 }
 
 // PUT - อัพเดทวิดีโอ
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export async function PUT(request: Request, { params }: RouteParams) {
   try {
-    const { id } = await params;
+  const { id } = await params;
     const formData = await request.formData();
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
@@ -78,7 +74,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE - ลบวิดีโอ
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
 

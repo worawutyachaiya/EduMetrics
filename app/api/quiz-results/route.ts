@@ -175,8 +175,8 @@
         })
 
         // Group by lesson และเอาเฉพาะครั้งล่าสุด
-        const latestResults = results.reduce((acc: typeof results, current) => {
-          const existing = acc.find(item => item.lesson === current.lesson)
+        const latestResults = results.reduce((acc: typeof results, current: typeof results[number]) => {
+          const existing = acc.find((item: typeof results[number]) => item.lesson === current.lesson)
           if (!existing) {
             acc.push(current)
           }
@@ -217,7 +217,7 @@
         
         if (result.phase === 'post') {
           // หา attempt number โดยนับจากผลที่มี completedAt >= ผลปัจจุบัน
-          const sameOrNewerResults = results.filter(r => 
+          const sameOrNewerResults = results.filter((r: typeof results[number]) => 
             r.lesson === result.lesson && 
             r.phase === 'post' && 
             r.userId === result.userId &&

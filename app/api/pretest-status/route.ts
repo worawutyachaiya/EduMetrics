@@ -25,9 +25,9 @@ export async function GET(request: NextRequest) {
     });
 
     // ตรวจสอบว่าทำครบ 10 บทเรียนหรือยัง
-    const completedLessons = pretestResults.map(result => result.lesson);
+  const completedLessons = pretestResults.map((result: { lesson: number }) => result.lesson);
     const allLessons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const isCompleted = allLessons.every(lesson => completedLessons.includes(lesson));
+  const isCompleted = allLessons.every((lesson: number) => completedLessons.includes(lesson));
 
     return NextResponse.json({
       completed: isCompleted,
