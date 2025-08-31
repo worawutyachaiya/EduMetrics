@@ -1,10 +1,7 @@
-// app/api/videos/[id]/route.ts
+// app/api/videos/[id]/route.ts - Update cover image handling to Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { writeFile, unlink } from 'fs/promises';
-import path from 'path';
-
-const prisma = new PrismaClient();
+import { deleteFromCloudinary, uploadImage } from '@/lib/cloudinary';
+import { prisma } from '@/lib/prisma';
 
 // Types
 interface RouteParams {
@@ -48,16 +45,24 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updateData.lesson = parseInt(lesson);
     }
 
-    // อัพโหลดรูปภาพใหม่ (ถ้ามี)
+    // อัพโหลดรูปภาพใหม่ไป Cloudinary (ถ้ามี)
     if (image && image.size > 0) {
+      const existing = await prisma.video.findUnique({ where: { id: parseInt(id) }, select: { id: true, imagePublicId: true } });
       const bytes = await image.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      
-      const filename = `${Date.now()}-${image.name}`;
-      const filepath = path.join(process.cwd(), 'public/uploads', filename);
-      
-      await writeFile(filepath, buffer);
-      updateData.image = `/uploads/${filename}`;
+      const filename = `video-cover-${id}`;
+      try {
+        const result: any = await uploadImage(buffer, filename);
+        updateData.image = result.secure_url ?? result.url ?? null;
+        (updateData as any).imagePublicId = result.public_id ?? null;
+
+        // ลบรูปเดิมใน Cloudinary แบบ best-effort ถ้ามีและไม่ใช่ไฟล์เดียวกัน
+        if (existing?.imagePublicId && existing.imagePublicId !== result.public_id) {
+          try { await deleteFromCloudinary(existing.imagePublicId, 'image') } catch {}
+        }
+      } catch (e) {
+        console.error('Cloudinary upload failed for video update:', e);
+      }
     }
 
     const video = await prisma.video.update({
@@ -76,19 +81,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    
-    // ลบรูปภาพ (ถ้ามี)
-    const video = await prisma.video.findUnique({
-      where: { id: parseInt(id) }
-    });
-    
-    if (video?.image) {
-      const filepath = path.join(process.cwd(), 'public', video.image);
-      try {
-        await unlink(filepath);
-      } catch (unlinkError) {
-        console.error('Failed to delete image file:', unlinkError);
-      }
+
+    // ลบรูปภาพใน Cloudinary ถ้ามี public_id
+    const video = await prisma.video.findUnique({ where: { id: parseInt(id) }, select: { imagePublicId: true } });
+    if (video?.imagePublicId) {
+      try { await deleteFromCloudinary(video.imagePublicId, 'image') } catch {}
     }
 
     await prisma.video.delete({

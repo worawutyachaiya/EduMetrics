@@ -190,6 +190,7 @@ function AdminVideoContent() {
   const [filterType, setFilterType] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [formNotice, setFormNotice] = useState<{ type: 'info' | 'success' | 'error' | ''; text: string }>({ type: '', text: '' });
 
   const [form, setForm] = useState<VideoForm>({
     title: "",
@@ -262,23 +263,24 @@ function AdminVideoContent() {
 
   const handleSubmit = async () => {
     if (!form.title || !form.description || !form.youtubeUrl || !form.courseType || !form.lesson) {
-      alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+  setFormNotice({ type: 'error', text: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
       return;
     }
 
     if (!isValidYouTubeUrl(form.youtubeUrl)) {
-      alert("กรุณากรอก YouTube URL ที่ถูกต้อง");
+  setFormNotice({ type: 'error', text: 'กรุณากรอก YouTube URL ที่ถูกต้อง' });
       return;
     }
 
     if (form.lesson < 1 || form.lesson > 10) {
-      alert("บทเรียนต้องอยู่ระหว่าง 1-10");
+  setFormNotice({ type: 'error', text: 'บทเรียนต้องอยู่ระหว่าง 1-10' });
       return;
     }
 
     try {
       setSubmitting(true);
       setError(null);
+  setFormNotice({ type: 'info', text: form.image ? 'กำลังอัปโหลดรูปไปยัง Cloudinary และบันทึกข้อมูล...' : 'กำลังบันทึกข้อมูล...' });
 
       const formData = new FormData();
       formData.append('title', form.title);
@@ -299,21 +301,28 @@ function AdminVideoContent() {
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Failed to save video');
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const msg = (result && (result.error || result.message)) || 'บันทึกไม่สำเร็จ';
+        setFormNotice({ type: 'error', text: msg });
+        return;
+      }
 
-      const savedVideo = await response.json();
+      const savedVideo = result;
 
       if (editingVideo) {
         setVideos(videos.map(v => v.id === editingVideo.id ? savedVideo : v));
-        alert("แก้ไขวิดีโอสำเร็จ");
+        setFormNotice({ type: 'success', text: 'แก้ไขวิดีโอสำเร็จ' });
       } else {
         setVideos([...videos, savedVideo]);
-        alert("เพิ่มวิดีโอสำเร็จ");
+        setFormNotice({ type: 'success', text: 'เพิ่มวิดีโอสำเร็จ' });
       }
 
       resetForm();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      const msg = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
+      setError(msg);
+      setFormNotice({ type: 'error', text: msg });
     } finally {
       setSubmitting(false);
     }
@@ -405,6 +414,17 @@ function AdminVideoContent() {
                 </h2>
               </div>
 
+              {/* Form notice */}
+              {formNotice.text && (
+                <div className={`mb-4 p-3 rounded-lg border text-sm ${
+                  formNotice.type === 'success' ? 'bg-green-50 text-green-800 border-green-200' :
+                  formNotice.type === 'error' ? 'bg-red-50 text-red-800 border-red-200' :
+                  'bg-blue-50 text-blue-800 border-blue-200'
+                }`}>
+                  {formNotice.text}
+                </div>
+              )}
+
               {/* Form */}
               <div className="space-y-4 max-w-md mb-8">
                 <div>
@@ -494,9 +514,18 @@ function AdminVideoContent() {
                     disabled={submitting}
                     className="w-full border px-4 py-2 rounded text-black disabled:bg-gray-100"
                   />
+                  {submitting && form.image && (
+                    <div className="mt-2 flex items-center gap-2 text-sm text-blue-700">
+                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      </svg>
+                      <span>กำลังอัปโหลดรูปไปยัง Cloudinary...</span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <button
                     onClick={handleSubmit}
                     disabled={submitting}
@@ -512,6 +541,11 @@ function AdminVideoContent() {
                     >
                       ยกเลิก
                     </button>
+                  )}
+                  {submitting && (
+                    <div className="flex-1 h-2 bg-gray-200 rounded overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-blue-500 to-purple-600 animate-pulse" style={{ width: '100%' }}></div>
+                    </div>
                   )}
                 </div>
               </div>

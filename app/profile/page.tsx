@@ -13,6 +13,7 @@ interface UserData {
   academicYear: number;
   role: string;
   createdAt: string;
+  avatarUrl?: string | null;
 }
 
 interface FormData {
@@ -40,6 +41,8 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [uploading, setUploading] = useState(false);
+  const [deletingAvatar, setDeletingAvatar] = useState(false);
   
   const router = useRouter();
 
@@ -145,6 +148,60 @@ const ProfilePage = () => {
       setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการเชื่อมต่อ' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // อัปโหลดรูปโปรไฟล์
+  const handleUploadAvatar = async (file: File) => {
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setMessage({ type: 'error', text: 'รองรับเฉพาะไฟล์ JPG, PNG, WEBP' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'ขนาดไฟล์ต้องไม่เกิน 5MB' });
+      return;
+    }
+    setUploading(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/profile/avatar', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setUserData((prev) => (prev ? { ...prev, avatarUrl: result.user.avatarUrl } : prev));
+        setMessage({ type: 'success', text: 'อัปโหลดรูปโปรไฟล์สำเร็จ' });
+      } else {
+        setMessage({ type: 'error', text: result.error || 'อัปโหลดไม่สำเร็จ' });
+      }
+    } catch (e) {
+      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการอัปโหลด' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    setDeletingAvatar(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const res = await fetch('/api/profile/avatar', { method: 'DELETE', credentials: 'include' });
+      const result = await res.json();
+      if (res.ok) {
+        setUserData((prev) => (prev ? { ...prev, avatarUrl: null } : prev));
+        setMessage({ type: 'success', text: 'ลบรูปโปรไฟล์แล้ว' });
+      } else {
+        setMessage({ type: 'error', text: result.error || 'ลบรูปไม่สำเร็จ' });
+      }
+    } catch (e) {
+      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการลบรูป' });
+    } finally {
+      setDeletingAvatar(false);
     }
   };
 
@@ -254,10 +311,42 @@ const ProfilePage = () => {
         {/* Header */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 p-8 mb-8">
           <div className="flex items-center space-x-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
-              <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
+            <div className="relative">
+              <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                {userData.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={userData.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <label className="px-3 py-2 text-xs text-black bg-white border border-black rounded-lg cursor-pointer hover:bg-gray-50">
+                  เปลี่ยนรูป
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      if (f) handleUploadAvatar(f)
+                    }}
+                    disabled={uploading}
+                  />
+                </label>
+                {userData.avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteAvatar}
+                    disabled={deletingAvatar}
+                    className="px-3 py-2 text-xs text-red-600 border border-red-300 rounded-lg hover:bg-red-50"
+                  >
+                    ลบรูป
+                  </button>
+                )}
+              </div>
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">

@@ -1,6 +1,7 @@
-// app/api/videos/route.ts - Updated version
+// app/api/videos/route.ts - Updated to store cover images in Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { uploadImage } from '@/lib/cloudinary';
 
 export async function GET() {
   try {
@@ -47,17 +48,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create video
-    const video = await prisma.video.create({
+    // Step 1: create the video first (without image) to get an ID
+    let video = await prisma.video.create({
       data: {
         title,
         description,
         youtubeUrl,
         courseType,
         lesson,
-        image: image ? `/uploads/${Date.now()}-${image.name}` : null
-      }
+        image: null,
+      },
     });
+
+    // Step 2: if cover image provided, upload to Cloudinary, then update the video with secure_url and public_id
+    if (image && image.size > 0) {
+      const bytes = await image.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const filename = `video-cover-${video.id}`; // deterministic public_id per video
+      try {
+        const result: any = await uploadImage(buffer, filename);
+        video = await prisma.video.update({
+          where: { id: video.id },
+          data: {
+            image: result.secure_url ?? result.url ?? null,
+            imagePublicId: result.public_id ?? null,
+          },
+        });
+      } catch (e) {
+        console.error('Cloudinary upload failed for video cover:', e);
+        // keep the video without image; optionally return warning
+      }
+    }
 
     return NextResponse.json(video);
   } catch (error) {

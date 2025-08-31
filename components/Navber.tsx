@@ -10,6 +10,7 @@ interface UserData {
   lastName: string;
   studentId: string;
   email: string;
+  avatarUrl?: string | null;
 }
 
 const Navbar = () => {
@@ -178,11 +179,20 @@ const Navbar = () => {
                     className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 
                              border border-blue-200 text-blue-700 px-4 py-3 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl group"
                   >
-                    {/* User Icon */}
-                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl">
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                      </svg>
+                    {/* User Avatar */}
+                    <div className="flex items-center justify-center w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-r from-blue-500 to-purple-500">
+                      {userData.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={userData.avatarUrl}
+                          alt="avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                      )}
                     </div>
                     
                     {/* User info */}
@@ -218,10 +228,19 @@ const Navbar = () => {
                       {/* User Header */}
                       <div className="px-6 py-4 border-b border-gray-100">
                         <div className="flex items-center space-x-4">
-                          <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl">
-                            <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                            </svg>
+                          <div className="flex items-center justify-center w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
+                            {userData.avatarUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={userData.avatarUrl}
+                                alt="avatar"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                              </svg>
+                            )}
                           </div>
                           <div className="flex-1">
                             <div className="font-bold text-gray-900 text-lg">
