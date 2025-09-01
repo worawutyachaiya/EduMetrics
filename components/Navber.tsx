@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import "./BurgerMenu.css";
 
 interface UserData {
   firstName: string;
@@ -87,7 +88,7 @@ const Navbar = () => {
         <div className="block lg:hidden">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center px-3 py-2 border rounded-xl text-gray-700 border-gray-300 hover:text-blue-600 hover:border-blue-500 transition-all duration-300"
+            className="flex items-center px-3 py-2 border rounded-xl text-gray-700 border-gray-300 hover:text-blue-600 hover:border-blue-500 transition-all duration-300 cursor-pointer"
           >
             <svg
               className="fill-current h-5 w-5"
@@ -102,9 +103,7 @@ const Navbar = () => {
 
         {/* เมนูนำทางและช่องค้นหา/ปุ่ม Login-Logout */}
         <div
-          className={`w-full lg:flex lg:items-center lg:w-auto transition-all duration-500 ease-in-out ${
-            isOpen ? "block animate-in slide-in-from-top-3 duration-300" : "hidden"
-          }`}
+          className={`w-full lg:flex lg:items-center lg:w-auto mobile-menu${isOpen ? " open" : ""}`}
         >
           <ul className="lg:flex flex-grow justify-center lg:space-x-2 mt-6 lg:mt-0 space-y-2 lg:space-y-0">
             <li>
@@ -194,7 +193,7 @@ const Navbar = () => {
                     className="group flex items-center space-x-4 py-4 px-6 rounded-2xl text-gray-700 
                              hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 
                              transition-all duration-300 font-medium border border-transparent 
-                             hover:border-blue-200/50 hover:shadow-md"
+                             hover:border-blue-200/50 hover:shadow-md cursor-pointer"
                     onClick={() => setIsOpen(false)}
                   >
                     <div className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-300">
@@ -214,7 +213,7 @@ const Navbar = () => {
                     className="group flex items-center space-x-4 w-full text-left py-4 px-6 rounded-2xl 
                              text-red-600 hover:text-red-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 
                              transition-all duration-300 font-medium border border-transparent 
-                             hover:border-red-200/50 hover:shadow-md"
+                             hover:border-red-200/50 hover:shadow-md cursor-pointer"
                   >
                     <div className="w-5 h-5 text-red-400 group-hover:text-red-600 transition-colors duration-300">
                       <svg fill="currentColor" viewBox="0 0 20 20">
@@ -243,7 +242,7 @@ const Navbar = () => {
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 
-                             border border-blue-200 text-blue-700 px-4 py-3 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl group"
+                             border border-blue-200 text-blue-700 px-4 py-3 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl group cursor-pointer"
                   >
                     {/* User Avatar */}
                     <div className="flex items-center justify-center w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-r from-blue-500 to-purple-500">
@@ -362,21 +361,21 @@ const Navbar = () => {
                   <div className="hidden lg:flex items-center space-x-3">
                     <Link href="/register">
                       <button className="bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-3 px-6 rounded-2xl 
-                                       border border-gray-200 transition-all duration-300 hover:shadow-lg">
+                                       border border-gray-200 transition-all duration-300 hover:shadow-lg cursor-pointer">
                         สมัครสมาชิก
                       </button>
                     </Link>
                     <Link href="/login">
                       <button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 
                                        text-white font-semibold py-3 px-6 rounded-2xl transition-all duration-300 shadow-lg 
-                                       hover:shadow-xl transform hover:scale-105">
+                                       hover:shadow-xl transform hover:scale-105 cursor-pointer">
                         เข้าสู่ระบบ
                       </button>
                     </Link>
                   </div>
                   
                   {/* ปุ่ม Login/Register สำหรับ Mobile ใน hamburger menu */}
-                  <div className="lg:hidden mt-6 pt-6 border-t border-gradient-to-r from-gray-200 to-gray-300 space-y-4">
+                  <div className="lg:hidden mt-6 pt-6 border-t border-gradient-to-r from-gray-200 to-gray-300 space-y-4 flex flex-col w-72 mx-auto">
                     <div className="text-center text-sm text-gray-500 font-medium mb-4">
                       เข้าสู่ระบบเพื่อเรียนรู้
                     </div>
@@ -384,7 +383,7 @@ const Navbar = () => {
                       <button className="group relative w-full bg-gradient-to-r from-gray-50 to-gray-100 
                                        hover:from-gray-100 hover:to-gray-200 text-gray-700 font-semibold 
                                        py-4 px-6 rounded-2xl border-2 border-gray-200 hover:border-gray-300 
-                                       transition-all duration-300 shadow-sm hover:shadow-md overflow-hidden">
+                                       transition-all duration-300 shadow-sm hover:shadow-md overflow-hidden cursor-pointer">
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 to-purple-400/0 
                                       group-hover:from-blue-400/5 group-hover:to-purple-400/5 transition-all duration-300"></div>
                         <span className="relative flex items-center justify-center space-x-2">
@@ -399,7 +398,7 @@ const Navbar = () => {
                       <button className="group relative w-full bg-gradient-to-r from-blue-500 to-purple-600 
                                        hover:from-blue-600 hover:to-purple-700 text-white font-semibold 
                                        py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg 
-                                       hover:shadow-xl transform hover:scale-[1.02] overflow-hidden">
+                                       hover:shadow-xl transform hover:scale-[1.02] overflow-hidden cursor-pointer">
                         <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/0 
                                       group-hover:from-white/10 group-hover:to-white/5 transition-all duration-300"></div>
                         <span className="relative flex items-center justify-center space-x-2">
