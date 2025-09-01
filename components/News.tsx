@@ -121,7 +121,7 @@ export default function NewsSection() {
                                         {/* Read more button */}
                                         <div className="mt-4">
                                             <button className="text-blue-600 font-semibold text-sm hover:text-blue-700 
-                                                             flex items-center group-hover:translate-x-1 transition-transform duration-300">
+                                                             flex items-center group-hover:translate-x-1 transition-transform duration-300 cursor-pointer">
                                                 อ่านต่อ
                                                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -140,7 +140,7 @@ export default function NewsSection() {
                             onClick={() => scrollRef.current?.scrollBy({ left: -380, behavior: 'smooth' })}
                             className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl 
                                      hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-blue-500/25
-                                     flex items-center justify-center transform hover:scale-110 transition-all duration-300"
+                                     flex items-center justify-center transform hover:scale-110 transition-all duration-300 cursor-pointer"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -150,7 +150,7 @@ export default function NewsSection() {
                             onClick={scrollWithLoop}
                             className="w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl 
                                      hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-blue-500/25
-                                     flex items-center justify-center transform hover:scale-110 transition-all duration-300"
+                                     flex items-center justify-center transform hover:scale-110 transition-all duration-300 cursor-pointer"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

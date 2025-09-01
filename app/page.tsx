@@ -69,13 +69,13 @@ const page = () => {
                   <Link href="/register">
                     <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold
                                      hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 
-                                     shadow-2xl hover:shadow-blue-500/25">
+                                     shadow-2xl hover:shadow-blue-500/25 cursor-pointer">
                       เริ่มเรียนฟรี
                     </button>
                   </Link>
                   <Link href="/couse">
                     <button className="border-2 border-white text-white px-8 py-4 rounded-xl text-lg font-semibold
-                                     hover:bg-white hover:text-purple-900 transform hover:scale-105 transition-all duration-300">
+                                     hover:bg-white hover:text-purple-900 transform hover:scale-105 transition-all duration-300 cursor-pointer">
                       ดูคอร์สทั้งหมด
                     </button>
                   </Link>
@@ -88,13 +88,13 @@ const page = () => {
                   <Link href="/couse">
                     <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold
                                      hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 
-                                     shadow-2xl hover:shadow-blue-500/25">
+                                     shadow-2xl hover:shadow-blue-500/25 cursor-pointer">
                       เข้าสู่คอร์สเรียน
                     </button>
                   </Link>
                   <Link href="/profile">
                     <button className="border-2 border-white text-white px-8 py-4 rounded-xl text-lg font-semibold
-                                     hover:bg-white hover:text-purple-900 transform hover:scale-105 transition-all duration-300">
+                                     hover:bg-white hover:text-purple-900 transform hover:scale-105 transition-all duration-300 cursor-pointer">
                       ดูโปรไฟล์
                     </button>
                   </Link>
@@ -122,7 +122,7 @@ const page = () => {
           </div>
           
           {/* Scroll indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+          <div className="absolute bottom-2 md:bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
             <div className="flex flex-col items-center">
               <span className="text-sm mb-2">เลื่อนลงเพื่อดูคอร์ส</span>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +157,7 @@ const page = () => {
             <Link href="/couse">
               <button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-12 py-4 rounded-2xl text-xl font-semibold
                                hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 
-                               shadow-2xl hover:shadow-blue-500/25">
+                               shadow-2xl hover:shadow-blue-500/25 cursor-pointer">
                 ดูคอร์สทั้งหมด
               </button>
             </Link>
@@ -189,13 +189,13 @@ const page = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/register">
                 <button className="bg-white text-purple-900 px-8 py-4 rounded-2xl text-lg font-semibold
-                                 hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl">
+                                 hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl cursor-pointer">
                   สมัครสมาชิกฟรี
                 </button>
               </Link>
               <Link href="/couse">
                 <button className="border-2 border-white text-white px-8 py-4 rounded-2xl text-lg font-semibold
-                                 hover:bg-white hover:text-purple-900 transform hover:scale-105 transition-all duration-300">
+                                 hover:bg-white hover:text-purple-900 transform hover:scale-105 transition-all duration-300 cursor-pointer">
                   ดูคอร์สทั้งหมด
                 </button>
               </Link>
@@ -207,13 +207,13 @@ const page = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/couse">
                 <button className="bg-white text-purple-900 px-8 py-4 rounded-2xl text-lg font-semibold
-                                 hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl">
+                                 hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-2xl cursor-pointer">
                   เข้าสู่คอร์สเรียน
                 </button>
               </Link>
               <Link href="/profile">
                 <button className="border-2 border-white text-white px-8 py-4 rounded-2xl text-lg font-semibold
-                                 hover:bg-white hover:text-purple-900 transform hover:scale-105 transition-all duration-300">
+                                 hover:bg-white hover:text-purple-900 transform hover:scale-105 transition-all duration-300 cursor-pointer">
                   จัดการโปรไฟล์
                 </button>
               </Link>
