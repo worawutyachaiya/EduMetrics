@@ -71,36 +71,39 @@ function AdminStudentsContent() {
   const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   // สำหรับค้นหาใน modal รายละเอียด
-  const [detailSearchTerm, setDetailSearchTerm] = useState("");
-  // ฟังก์ชันกรอง detailedResults ตาม detailSearchTerm (รองรับ pattern เช่น HTML, CSS, HTML1, CSS2, HTML บทที่ 1, CSS บทที่ 2)
-  const filteredDetailedResults = selectedStudent?.detailedResults.filter(result => {
-    if (!detailSearchTerm.trim()) return true;
-    const term = detailSearchTerm.trim().toLowerCase();
-    // split by comma, remove empty, trim
-    const terms = term.split(',').map(t => t.trim()).filter(Boolean);
-    // สร้าง pattern หลัก ๆ
-    return terms.some(t => {
-      // HTML, CSS
-      if (t === 'html' || t === 'css') {
-        return result.quizType.toLowerCase() === t;
-      }
-      // HTML1, CSS2
-      const matchTypeNum = t.match(/^(html|css)(\d+)$/);
-      if (matchTypeNum) {
-        return result.quizType.toLowerCase() === matchTypeNum[1] && result.lesson.toString() === matchTypeNum[2];
-      }
-      // HTML บทที่ 1, CSS บทที่ 2
-      const matchTypeLesson = t.match(/^(html|css)\s*บทที่\s*(\d+)$/);
-      if (matchTypeLesson) {
-        return result.quizType.toLowerCase() === matchTypeLesson[1] && result.lesson.toString() === matchTypeLesson[2];
-      }
-      // เฉพาะเลขบทเรียน เช่น 1, 2
-      if (/^\d+$/.test(t)) {
-        return result.lesson.toString() === t;
-      }
-      // เฉพาะประเภท (contains)
-      return result.quizType.toLowerCase().includes(t);
+  const [selectedLessonFilter, setSelectedLessonFilter] = useState("");
+  
+  // สร้างตัวเลือกบทเรียนจากข้อมูลที่มี
+  const getLessonOptions = () => {
+    if (!selectedStudent?.detailedResults) return [];
+    
+    const lessons = new Set<string>();
+    selectedStudent.detailedResults.forEach(result => {
+      lessons.add(`${result.quizType.toUpperCase()}-${result.lesson}`);
     });
+    
+    return Array.from(lessons).sort((a, b) => {
+      const [aType, aNum] = a.split('-');
+      const [bType, bNum] = b.split('-');
+      
+      // เรียงตาม HTML ก่อน แล้ว CSS
+      if (aType !== bType) {
+        if (aType === 'HTML' && bType === 'CSS') return -1;
+        if (aType === 'CSS' && bType === 'HTML') return 1;
+        return aType.localeCompare(bType);
+      }
+      
+      // ถ้าเป็นประเภทเดียวกัน เรียงตามเลขบทเรียน
+      return parseInt(aNum) - parseInt(bNum);
+    });
+  };
+  
+  // ฟังก์ชันกรอง detailedResults ตาม selectedLessonFilter
+  const filteredDetailedResults = selectedStudent?.detailedResults.filter(result => {
+    if (!selectedLessonFilter) return true;
+    
+    const [filterType, filterLesson] = selectedLessonFilter.split('-');
+    return result.quizType.toUpperCase() === filterType && result.lesson.toString() === filterLesson;
   }) || [];
 
   const fetchStudents = useCallback(async () => {
@@ -147,6 +150,7 @@ function AdminStudentsContent() {
 
       const data = await response.json();
       setSelectedStudent(data);
+      setSelectedLessonFilter(""); // รีเซ็ตตัวกรองเมื่อเปิด modal ใหม่
       setShowDetail(true);
     } catch (error) {
       console.error('Error fetching student details:', error);
@@ -383,8 +387,11 @@ function AdminStudentsContent() {
                   รายละเอียดการเรียน - {selectedStudent.firstName} {selectedStudent.lastName}
                 </h2>
                 <button
-                  onClick={() => setShowDetail(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={() => {
+                    setShowDetail(false);
+                    setSelectedLessonFilter(""); // รีเซ็ตตัวกรองเมื่อปิด modal
+                  }}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -409,18 +416,26 @@ function AdminStudentsContent() {
                 </div>
               </div>
 
-              {/* Search in detail modal */}
+              {/* Filter by lesson dropdown */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-black mb-2">
-                  ค้นหา (ประเภทหรือบทเรียน เช่น HTML, CSS, HTML1, CSS2, HTML บทที่ 1, CSS บทที่ 2)
+                  เลือกบทเรียน
                 </label>
-                <input
-                  type="text"
-                  value={detailSearchTerm}
-                  onChange={e => setDetailSearchTerm(e.target.value)}
-                  placeholder="ค้นหาด้วยประเภทหรือเลขบทเรียน..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                />
+                <select
+                  value={selectedLessonFilter}
+                  onChange={e => setSelectedLessonFilter(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black bg-white cursor-pointer"
+                >
+                  <option value="">แสดงทั้งหมด</option>
+                  {getLessonOptions().map(option => {
+                    const [type, lesson] = option.split('-');
+                    return (
+                      <option key={option} value={option}>
+                        {type} - บทเรียนที่ {lesson}
+                      </option>
+                    );
+                  })}
+                </select>
               </div>
 
               {/* Results */}
@@ -449,15 +464,15 @@ function AdminStudentsContent() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">คะแนน:</span>
-                                <span className="text-sm font-medium">{result.pretest.score}/{result.pretest.totalScore}</span>
+                                <span className="text-sm font-medium text-black">{result.pretest.score}/{result.pretest.totalScore}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">เปอร์เซ็นต์:</span>
-                                <span className="text-sm font-medium">{result.pretest.percentage}%</span>
+                                <span className="text-sm font-medium text-black">{result.pretest.percentage}%</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">วันที่:</span>
-                                <span className="text-sm">{new Date(result.pretest.completedAt).toLocaleDateString('th-TH')}</span>
+                                <span className="text-sm text-black">{new Date(result.pretest.completedAt).toLocaleDateString('th-TH')}</span>
                               </div>
                             </div>
                           ) : (
@@ -479,9 +494,9 @@ function AdminStudentsContent() {
                                 <div key={idx} className="bg-white rounded p-3 border border-green-200">
                                   <div className="flex justify-between items-center mb-1">
                                     <span className="text-xs font-medium text-gray-600">ครั้งที่ {result.posttests.length - idx}</span>
-                                    <span className="text-sm font-semibold">{posttest.score}/{posttest.totalScore} ({posttest.percentage}%)</span>
+                                    <span className="text-sm font-semibold text-black">{posttest.score}/{posttest.totalScore} ({posttest.percentage}%)</span>
                                   </div>
-                                  <p className="text-xs text-gray-500">
+                                  <p className="text-xs text-black">
                                     {new Date(posttest.completedAt).toLocaleDateString('th-TH')}
                                   </p>
                                 </div>
