@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     });
 
     // สร้าง reset URL
-    const resetUrl = `${process.env.NEXTAUTH_URL || 'ruslearning.vercel.app'}/reset-password?token=${resetToken}`;
+    const resetUrl = `https://ruslearning.vercel.app/reset-password?token=${resetToken}`;
 
     // สำหรับ demo - ถ้าไม่มีการตั้งค่า email ให้แสดง URL ใน console
     if (!process.env.SMTP_USER) {
