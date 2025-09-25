@@ -55,9 +55,38 @@ export async function GET() {
 
   } catch (error) {
     console.error('Token verification failed:', error)
-    return NextResponse.json(
-      { error: 'Token ไม่ถูกต้อง' },
+    
+    // Create response with appropriate error handling
+    let errorMessage = 'Token ไม่ถูกต้อง'
+    let shouldClearCookie = false
+
+    // Check if it's a token expired error
+    if (error instanceof jwt.TokenExpiredError) {
+      errorMessage = 'Token หมดอายุ กรุณาเข้าสู่ระบบใหม่'
+      shouldClearCookie = true
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      errorMessage = 'Token ไม่ถูกต้อง'
+      shouldClearCookie = true
+    }
+
+    const response = NextResponse.json(
+      { 
+        error: errorMessage,
+        expired: error instanceof jwt.TokenExpiredError
+      },
       { status: 401 }
     )
+
+    // Clear the invalid/expired token cookie
+    if (shouldClearCookie) {
+      response.cookies.set('token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 0
+      })
+    }
+
+    return response
   }
 }

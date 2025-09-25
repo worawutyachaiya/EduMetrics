@@ -37,16 +37,23 @@ export default function HTMLVideoPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   const fetchSkippedLessons = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log('No user ID, skipping lesson progress fetch');
+      return;
+    }
     
     try {
+      console.log('Fetching skipped lessons for user:', user.id);
       const response = await fetch(`/api/user-progress?userId=${user.id}&courseType=HTML`);
       if (response.ok) {
         const data: UserProgress[] = await response.json();
         const skipped = data.filter((progress) => progress.skipped).map((progress) => progress.lesson);
         const completed = data.filter((progress) => progress.completed).map((progress) => progress.lesson);
+        console.log('Skipped lessons:', skipped, 'Completed lessons:', completed);
         setSkippedLessons(skipped);
         setCompletedLessons(completed);
+      } else {
+        console.error('Failed to fetch user progress:', response.status);
       }
     } catch (error) {
       console.error('Error fetching skipped lessons:', error);
@@ -107,47 +114,83 @@ export default function HTMLVideoPage() {
 
   const fetchVideos = useCallback(async () => {
     try {
-      const response = await fetch('/api/videos');
+      console.log('Fetching videos from /api/videos...');
+      
+      // เพิ่ม timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+      
+      const response = await fetch('/api/videos', {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const data: Video[] = await response.json();
+        console.log('Videos data:', data);
+        
         // กรองเฉพาะวิดีโอที่เกี่ยวกับ HTML
         const htmlVideos = data.filter((video: Video) => 
           video.title.toLowerCase().includes('html') || 
           video.description.toLowerCase().includes('html')
         );
+        console.log('HTML videos filtered:', htmlVideos);
+        
+        if (htmlVideos.length === 0) {
+          console.log('No HTML videos found');
+          setVideos([]);
+          setLoading(false);
+          return;
+        }
         
         // เรียงลำดับตามบทเรียนและเพิ่มระยะเวลา
         htmlVideos.sort((a: Video, b: Video) => (a.lesson || 0) - (b.lesson || 0));
         
-        // ดึงระยะเวลาสำหรับแต่ละวิดีโอ
-        const videosWithDuration = await Promise.all(
-          htmlVideos.map(async (video: Video) => {
-            const videoId = extractVideoId(video.youtubeUrl);
-            const duration = await getYouTubeDuration(videoId);
-            return { ...video, duration };
-          })
-        );
+        // ดึงระยะเวลาสำหรับแต่ละวิดีโอ (แบบง่าย ๆ ไม่ใช้ YouTube API)
+        const videosWithDuration = htmlVideos.map((video: Video) => ({
+          ...video,
+          duration: '15:30' // ใช้ duration เดียวกันทั้งหมดก่อน
+        }));
         
+        console.log('Videos with duration:', videosWithDuration);
         setVideos(videosWithDuration);
+      } else {
+        console.error('Failed to fetch videos:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Failed to fetch videos:', error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('Request timeout');
+      } else {
+        console.error('Failed to fetch videos:', error);
+      }
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
-  }, [extractVideoId]);
+  }, []); // ไม่มี dependencies
 
   const getYouTubeEmbedUrl = useCallback((url: string): string => {
     const videoId = extractVideoId(url);
     return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1` : url;
   }, [extractVideoId]);
 
+  // โหลดวิดีโอทันทีเมื่อ component mount
   useEffect(() => {
+    console.log('Component mounted, fetching videos...');
+    fetchVideos();
+  }, []);
+  
+  useEffect(() => {
+    // โหลด skipped lessons เฉพาะเมื่อมี user
     if (user) {
+      console.log('User found, fetching skipped lessons...');
       fetchSkippedLessons();
-      fetchVideos();
+    } else {
+      console.log('No user found, skipping lesson progress');
     }
-  }, [user, fetchSkippedLessons, fetchVideos]);
+  }, [user, fetchSkippedLessons]);
 
   useEffect(() => {
     // กรองวิดีโอที่ไม่ใช่บทเรียนที่ข้าม
@@ -206,30 +249,56 @@ export default function HTMLVideoPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-emerald-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
           <div className="text-xl text-gray-700 font-medium">กำลังโหลดเนื้อหา...</div>
         </div>
       </div>
     );
   }
 
+  // ถ้าไม่มีข้อมูลวิดีโอ
+  if (videos.length === 0) {
+    return (
+      <RouteGuard requireAuth={true}>
+        <PretestChecker courseType="HTML">
+          <div className="min-h-screen bg-emerald-50 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-2xl text-gray-700 font-medium mb-4">ไม่พบเนื้อหาวิดีโอ HTML</div>
+              <div className="text-gray-600">
+                โปรดติดต่อผู้ดูแลระบบเพื่อเพิ่มเนื้อหาวิดีโอ
+              </div>
+              <button 
+                onClick={() => window.location.reload()}
+                className="mt-4 bg-emerald-500 text-white px-6 py-2 rounded-lg hover:bg-emerald-600"
+              >
+                โหลดใหม่
+              </button>
+            </div>
+          </div>
+        </PretestChecker>
+      </RouteGuard>
+    );
+  }
+
   return (
     <RouteGuard requireAuth={true}>
       <PretestChecker courseType="HTML">
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 flex flex-col lg:flex-row gap-6">
+        <div className="min-h-screen bg-emerald-50 p-4 flex flex-col lg:flex-row gap-6">
           {/* Video Player Section */}
           <div className="flex-1 space-y-4">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               <div className="aspect-video w-full bg-black relative">
-                <iframe
-                  src={videoSrc}
-                  title={videoTitle}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                />
+                {videoSrc ? (
+                  <iframe
+                    src={videoSrc}
+                    title={videoTitle}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                ) : null}
                 {!isVideoPlaying && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="text-white text-center">

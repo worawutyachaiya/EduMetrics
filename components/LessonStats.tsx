@@ -129,8 +129,8 @@ const LessonStats: React.FC<LessonStatsProps> = ({
           key={stat.lesson}
           className={`group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
             stat.totalQuizzes > 0 
-              ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:border-blue-300' 
-              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 hover:border-gray-300'
+              ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-300' 
+              : 'bg-gray-50 border-gray-200 hover:border-gray-300'
           }`}
         >
           {/* Background Pattern */}
@@ -195,9 +195,9 @@ const LessonStats: React.FC<LessonStatsProps> = ({
                     <div className="font-bold text-green-600">{stat.preQuizzes}</div>
                     <div className="text-green-500">ก่อนเรียน</div>
                   </div>
-                  <div className="bg-white/60 rounded-lg p-2 text-center border border-purple-200">
-                    <div className="font-bold text-purple-600">{stat.postQuizzes}</div>
-                    <div className="text-purple-500">หลังเรียน</div>
+                  <div className="bg-white/60 rounded-lg p-2 text-center border border-emerald-200">
+                    <div className="font-bold text-emerald-600">{stat.postQuizzes}</div>
+                    <div className="text-emerald-500">หลังเรียน</div>
                   </div>
                 </div>
               </div>
@@ -218,7 +218,7 @@ const LessonStats: React.FC<LessonStatsProps> = ({
                 <div className="text-xs text-gray-500 mb-1">ความครบถ้วน</div>
                 <div className="bg-white/60 rounded-full h-2 overflow-hidden">
                   <div 
-                    className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full transition-all duration-500"
+                    className="bg-emerald-500 h-full transition-all duration-500"
                     style={{ width: `${Math.min((stat.totalQuizzes / 20) * 100, 100)}%` }}
                   ></div>
                 </div>

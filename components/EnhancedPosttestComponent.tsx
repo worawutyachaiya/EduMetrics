@@ -325,7 +325,7 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 right-20 w-40 h-40 bg-purple-100 rounded-full opacity-30"></div>
+          <div className="absolute top-20 right-20 w-40 h-40 bg-emerald-100 rounded-full opacity-30"></div>
           <div className="absolute bottom-20 left-20 w-32 h-32 bg-blue-100 rounded-full opacity-30"></div>
         </div>
         
@@ -342,19 +342,19 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 px-4 py-12 relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 right-20 w-64 h-64 bg-purple-100 rounded-full opacity-20"></div>
-          <div className="absolute bottom-20 left-20 w-48 h-48 bg-blue-100 rounded-full opacity-20"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-indigo-100 rounded-full opacity-20"></div>
+          <div className="absolute top-20 right-20 w-64 h-64 bg-emerald-100 rounded-full opacity-20"></div>
+          <div className="absolute bottom-20 left-20 w-48 h-48 bg-teal-100 rounded-full opacity-20"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-cyan-100 rounded-full opacity-20"></div>
         </div>
         
         <div className="w-full max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h1 className="text-5xl lg:text-6xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-emerald-600">
                 {title}
               </span>
             </h1>
-            <div className="w-32 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-8 rounded-full" />
+            <div className="w-32 h-1 bg-emerald-500 mx-auto mb-8 rounded-full" />
             <p className="text-gray-600 text-xl lg:text-2xl max-w-3xl mx-auto leading-relaxed">
               เลือกรูปแบบการทำข้อสอบหลังเรียน
             </p>
@@ -411,19 +411,19 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
               </button>
             </div>
 
-            <div className="group bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 p-8 hover:shadow-2xl hover:shadow-purple-500/20 transform hover:-translate-y-2 transition-all duration-500">
+            <div className="group bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 p-8 hover:shadow-2xl hover:shadow-emerald-500/20 transform hover:-translate-y-2 transition-all duration-500">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-emerald-500 rounded-2xl flex items-center justify-center">
                   <TrendingUp className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+                <h2 className="text-2xl font-bold text-emerald-600 mb-4">
                   การพัฒนา
                 </h2>
                 <p className="text-gray-600 mb-6">เปรียบเทียบผลก่อนเรียนและหลังเรียน</p>
               </div>
               <button
                 onClick={() => setMode('comparison')}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-2xl font-semibold text-lg hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                className="w-full bg-emerald-500 text-white py-4 rounded-2xl font-semibold text-lg hover:bg-emerald-600 transform hover:scale-105 transition-all duration-300 shadow-lg"
               >
                 ดูการพัฒนา
               </button>
@@ -449,7 +449,7 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-300 border-t-blue-600 mx-auto mb-6"></div>
-            <div className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <div className="text-2xl font-semibold text-emerald-600">
               กำลังโหลดข้อสอบ...
             </div>
           </div>
@@ -464,7 +464,7 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
             <div className="text-red-500 text-xl font-semibold mb-4">เกิดข้อผิดพลาด: {error}</div>
             <button
               onClick={() => setMode('menu')}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-2xl font-semibold hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-300 shadow-lg"
+              className="bg-gradient-to-r bg-emerald-500 text-white px-6 py-3 rounded-2xl font-semibold hover:from-blue-600 hover: transform hover:scale-105 transition-all duration-300 shadow-lg"
             >
               กลับไปเมนู
             </button>
@@ -477,18 +477,18 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 px-4 py-12 relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 right-20 w-64 h-64 bg-purple-100 rounded-full opacity-20"></div>
-          <div className="absolute bottom-20 left-20 w-48 h-48 bg-blue-100 rounded-full opacity-20"></div>
+          <div className="absolute top-20 right-20 w-64 h-64 bg-emerald-100 rounded-full opacity-20"></div>
+          <div className="absolute bottom-20 left-20 w-48 h-48 bg-teal-100 rounded-full opacity-20"></div>
         </div>
         
         <div className="w-full max-w-4xl mx-auto relative z-10">
           <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 p-8 mb-8">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h2 className="text-2xl font-bold bg-gradient-to-r bg-emerald-600 bg-clip-text text-transparent">
                   {title} - บทเรียนที่ {selectedLesson}
                 </h2>
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-3 mt-3 inline-block">
+                <div className="bg-gradient-to-r from-blue-50  rounded-2xl p-3 mt-3 inline-block">
                   <p className="text-gray-700 font-medium">
                     ครั้งที่ {getResultsForLesson(selectedLesson!).length + 1} | 
                     จำนวนข้อสอบ: {quizzes.length} ข้อ
@@ -512,7 +512,7 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
                 </p>
                 <div className="space-y-4 pl-4">
                   {quiz.choices.map((choice, i) => (
-                    <label key={i} className="flex items-center cursor-pointer p-4 rounded-2xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300">
+                    <label key={i} className="flex items-center cursor-pointer p-4 rounded-2xl hover:bg-gradient-to-r hover:from-blue-50 hover: transition-all duration-300">
                       <input
                         type="radio"
                         name={`question-${index}`}
@@ -533,7 +533,7 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
               <button
                 type="submit"
                 disabled={submitting || Object.keys(answers).length !== quizzes.length}
-                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-12 py-4 rounded-2xl font-semibold text-lg hover:from-blue-600 hover:to-purple-600 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 shadow-lg"
+                className="bg-gradient-to-r bg-emerald-500 text-white px-12 py-4 rounded-2xl font-semibold text-lg hover:from-blue-600 hover: disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 shadow-lg"
               >
                 {submitting ? 'กำลังส่งคำตอบ...' : 'ส่งคำตอบ'}
               </button>
@@ -667,7 +667,7 @@ export default function EnhancedPosttestComponent({ type, title }: PosttestProps
                   <div className="text-sm text-gray-700">คะแนนเฉลี่ยหลังเรียน</div>
                 </div>
                 <div className="bg-white p-4 rounded-lg text-center">
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-2xl font-bold text-emerald-600">
                     {(improvementData.reduce((sum, data) => sum + data.bestPosttest, 0) / (improvementData.length || 1)).toFixed(1)}%
                   </div>
                   <div className="text-sm text-gray-700">คะแนนเฉลี่ยสูงสุด</div>

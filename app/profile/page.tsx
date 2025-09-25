@@ -280,15 +280,15 @@ const ProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 flex items-center justify-center relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 right-20 w-40 h-40 bg-purple-100 rounded-full opacity-30"></div>
-          <div className="absolute bottom-20 left-20 w-32 h-32 bg-blue-100 rounded-full opacity-30"></div>
+          <div className="absolute top-20 right-20 w-40 h-40 bg-emerald-100 rounded-full opacity-30"></div>
+          <div className="absolute bottom-20 left-20 w-32 h-32 bg-teal-100 rounded-full opacity-30"></div>
         </div>
         
         <div className="text-center text-gray-600 relative z-10">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-blue-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-emerald-500 mx-auto mb-4"></div>
           <p className="text-xl font-medium">กำลังโหลด...</p>
         </div>
       </div>
@@ -300,11 +300,11 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8 px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 py-8 px-4 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-40 right-40 w-64 h-64 bg-purple-100 rounded-full opacity-20"></div>
-        <div className="absolute bottom-40 left-40 w-48 h-48 bg-blue-100 rounded-full opacity-20"></div>
+        <div className="absolute top-40 right-40 w-64 h-64 bg-emerald-100 rounded-full opacity-20"></div>
+        <div className="absolute bottom-40 left-40 w-48 h-48 bg-teal-100 rounded-full opacity-20"></div>
       </div>
       
       <div className="max-w-4xl mx-auto relative z-10">
@@ -312,7 +312,7 @@ const ProfilePage = () => {
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 p-8 mb-8">
           <div className="flex items-center space-x-6">
             <div className="relative">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="w-24 h-24 rounded-2xl overflow-hidden bg-emerald-500 flex items-center justify-center">
                 {userData.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={userData.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
@@ -349,7 +349,7 @@ const ProfilePage = () => {
               </div>
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-emerald-600">
                 {userData.firstName} {userData.lastName}
               </h1>
               <p className="text-gray-600">รหัสนักศึกษา: {userData.studentId}</p>
@@ -365,7 +365,7 @@ const ProfilePage = () => {
                 onClick={() => setActiveTab('profile')}
                 className={`py-6 px-2 border-b-2 font-semibold text-sm transition-all duration-300 ${
                   activeTab === 'profile'
-                    ? 'border-blue-500 text-blue-600 bg-blue-50/50'
+                    ? 'border-emerald-500 text-emerald-600 bg-emerald-50/50'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -375,7 +375,7 @@ const ProfilePage = () => {
                 onClick={() => setActiveTab('security')}
                 className={`py-6 px-2 border-b-2 font-semibold text-sm transition-all duration-300 ${
                   activeTab === 'security'
-                    ? 'border-purple-500 text-purple-600 bg-purple-50/50'
+                    ? 'border-teal-500 text-teal-600 bg-teal-50/50'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -424,7 +424,7 @@ const ProfilePage = () => {
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       placeholder={isEditing ? "ใส่ชื่อใหม่ หรือเว้นว่างไว้เพื่อไม่เปลี่ยนแปลง" : ""}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900"
                     />
                   </div>
 
@@ -473,8 +473,8 @@ const ProfilePage = () => {
                 </div>
 
                 {isEditing && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-blue-800">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-emerald-800">
                       <strong>คำแนะนำ:</strong> คุณสามารถแก้ไขเฉพาะฟิลด์ที่ต้องการเปลี่ยนแปลง 
                       ฟิลด์ที่ไม่ต้องการเปลี่ยนสามารถเว้นว่างไว้ได้
                     </p>
@@ -493,7 +493,7 @@ const ProfilePage = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                      className="px-6 py-3 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 disabled:opacity-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                     >
                       {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                     </button>
@@ -556,7 +556,7 @@ const ProfilePage = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="w-full px-6 py-3 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 disabled:opacity-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   {isSubmitting ? 'กำลังเปลี่ยน...' : 'เปลี่ยนรหัสผ่าน'}
                 </button>

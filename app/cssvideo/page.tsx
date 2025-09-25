@@ -37,16 +37,23 @@ export default function CSSVideoPage() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   const fetchSkippedLessons = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log('No user ID, skipping lesson progress fetch');
+      return;
+    }
     
     try {
+      console.log('Fetching skipped lessons for user:', user.id);
       const response = await fetch(`/api/user-progress?userId=${user.id}&courseType=CSS`);
       if (response.ok) {
         const data: UserProgress[] = await response.json();
         const skipped = data.filter((progress) => progress.skipped).map((progress) => progress.lesson);
         const completed = data.filter((progress) => progress.completed).map((progress) => progress.lesson);
+        console.log('Skipped lessons:', skipped, 'Completed lessons:', completed);
         setSkippedLessons(skipped);
         setCompletedLessons(completed);
+      } else {
+        console.error('Failed to fetch user progress:', response.status);
       }
     } catch (error) {
       console.error('Error fetching skipped lessons:', error);
@@ -108,47 +115,83 @@ export default function CSSVideoPage() {
 
   const fetchVideos = useCallback(async () => {
     try {
-      const response = await fetch('/api/videos');
+      console.log('Fetching CSS videos from /api/videos...');
+      
+      // เพิ่ม timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+      
+      const response = await fetch('/api/videos', {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const data: Video[] = await response.json();
+        console.log('Videos data:', data);
+        
         // กรองเฉพาะวิดีโอที่เกี่ยวกับ CSS
         const cssVideos = data.filter((video: Video) => 
           video.title.toLowerCase().includes('css') || 
           video.description.toLowerCase().includes('css')
         );
+        console.log('CSS videos filtered:', cssVideos);
+        
+        if (cssVideos.length === 0) {
+          console.log('No CSS videos found');
+          setVideos([]);
+          setLoading(false);
+          return;
+        }
         
         // เรียงลำดับตามบทเรียนและเพิ่มระยะเวลา
         cssVideos.sort((a: Video, b: Video) => (a.lesson || 0) - (b.lesson || 0));
         
-        // ดึงระยะเวลาสำหรับแต่ละวิดีโอ
-        const videosWithDuration = await Promise.all(
-          cssVideos.map(async (video: Video) => {
-            const videoId = extractVideoId(video.youtubeUrl);
-            const duration = await getYouTubeDuration(videoId);
-            return { ...video, duration };
-          })
-        );
+        // ดึงระยะเวลาสำหรับแต่ละวิดีโอ (แบบง่าย ๆ ไม่ใช้ YouTube API)
+        const videosWithDuration = cssVideos.map((video: Video) => ({
+          ...video,
+          duration: '15:30' // ใช้ duration เดียวกันทั้งหมดก่อน
+        }));
         
+        console.log('CSS videos with duration:', videosWithDuration);
         setVideos(videosWithDuration);
+      } else {
+        console.error('Failed to fetch CSS videos:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Failed to fetch videos:', error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('CSS videos request timeout');
+      } else {
+        console.error('Failed to fetch CSS videos:', error);
+      }
     } finally {
+      console.log('Setting CSS loading to false');
       setLoading(false);
     }
-  }, [extractVideoId]);
+  }, []); // ไม่มี dependencies
 
   const getYouTubeEmbedUrl = useCallback((url: string): string => {
     const videoId = extractVideoId(url);
     return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1` : url;
   }, [extractVideoId]);
 
+  // โหลดวิดีโอทันทีเมื่อ component mount
   useEffect(() => {
+    console.log('CSS component mounted, fetching videos...');
+    fetchVideos();
+  }, []);
+  
+  useEffect(() => {
+    // โหลด skipped lessons เฉพาะเมื่อมี user
     if (user) {
+      console.log('CSS User found, fetching skipped lessons...');
       fetchSkippedLessons();
-      fetchVideos();
+    } else {
+      console.log('CSS No user found, skipping lesson progress');
     }
-  }, [user, fetchSkippedLessons, fetchVideos]);
+  }, [user, fetchSkippedLessons]);
 
   useEffect(() => {
     // กรองวิดีโอที่ไม่ใช่บทเรียนที่ข้าม
@@ -216,6 +259,30 @@ export default function CSSVideoPage() {
     );
   }
 
+  // ถ้าไม่มีข้อมูลวิดีโอ
+  if (videos.length === 0) {
+    return (
+      <RouteGuard requireAuth={true}>
+        <PretestChecker courseType="CSS">
+          <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-2xl text-gray-700 font-medium mb-4">ไม่พบเนื้อหาวิดีโอ CSS</div>
+              <div className="text-gray-600">
+                โปรดติดต่อผู้ดูแลระบบเพื่อเพิ่มเนื้อหาวิดีโอ
+              </div>
+              <button 
+                onClick={() => window.location.reload()}
+                className="mt-4 bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600"
+              >
+                โหลดใหม่
+              </button>
+            </div>
+          </div>
+        </PretestChecker>
+      </RouteGuard>
+    );
+  }
+
   return (
     <RouteGuard requireAuth={true}>
       <PretestChecker courseType="CSS">
@@ -224,13 +291,15 @@ export default function CSSVideoPage() {
           <div className="flex-1 space-y-4">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               <div className="aspect-video w-full bg-black relative">
-                <iframe
-                  src={videoSrc}
-                  title={videoTitle}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                />
+                {videoSrc ? (
+                  <iframe
+                    src={videoSrc}
+                    title={videoTitle}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                ) : null}
                 {!isVideoPlaying && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="text-white text-center">

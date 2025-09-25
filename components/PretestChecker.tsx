@@ -16,7 +16,7 @@ interface PretestStatus {
 }
 
 export default function PretestChecker({ courseType, children }: PretestCheckerProps) {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [pretestStatus, setPretestStatus] = useState<PretestStatus>({
     completed: false,
@@ -25,7 +25,16 @@ export default function PretestChecker({ courseType, children }: PretestCheckerP
   });
 
   const checkPretestStatus = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      // ถ้าไม่มี user (ยังไม่ login) ให้ redirect ไป login
+      setPretestStatus({
+        completed: false,
+        loading: false,
+        error: null
+      });
+      router.push('/login');
+      return;
+    }
     
     try {
       setPretestStatus(prev => ({ ...prev, loading: true, error: null }));
@@ -60,13 +69,19 @@ export default function PretestChecker({ courseType, children }: PretestCheckerP
   }, [courseType, user?.id, router]);
 
   useEffect(() => {
-    if (user) {
+    // รอให้ auth loading เสร็จก่อน
+    if (authLoading) return;
+    
+    if (isAuthenticated && user) {
       checkPretestStatus();
+    } else {
+      // ถ้าไม่ได้ authenticated ให้ redirect ไป login
+      router.push('/login');
     }
-  }, [user, checkPretestStatus]);
+  }, [user, isAuthenticated, authLoading, checkPretestStatus, router]);
 
-  // Loading state
-  if (pretestStatus.loading) {
+  // Loading state - รวม auth loading ด้วย
+  if (authLoading || pretestStatus.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

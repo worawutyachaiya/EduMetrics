@@ -39,9 +39,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json()
         setUser(data.user)
         setIsAuthenticated(true)
+      } else if (res.status === 401) {
+        // Token is invalid or expired, clear authentication state
+        const data = await res.json()
+        console.log('Authentication failed:', data.error)
+        setUser(null)
+        setIsAuthenticated(false)
       }
     } catch (error) {
       console.error('Auth check failed:', error)
+      // On network error or other issues, clear auth state to be safe
+      setUser(null)
+      setIsAuthenticated(false)
     } finally {
       setIsLoading(false)
     }

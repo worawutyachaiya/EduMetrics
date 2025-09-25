@@ -13,21 +13,21 @@ import {
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 px-4 py-12 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-20 right-20 w-64 h-64 bg-purple-100 rounded-full opacity-20"></div>
-        <div className="absolute bottom-20 left-20 w-48 h-48 bg-blue-100 rounded-full opacity-20"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-indigo-100 rounded-full opacity-20"></div>
+        <div className="absolute top-20 right-20 w-64 h-64 bg-emerald-100 rounded-full opacity-20"></div>
+        <div className="absolute bottom-20 left-20 w-48 h-48 bg-teal-100 rounded-full opacity-20"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-cyan-100 rounded-full opacity-20"></div>
       </div>
       
       <div className="max-w-6xl mx-auto text-center relative z-10">
         <h1 className="text-5xl lg:text-6xl font-bold mb-6">
-          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <span className="text-emerald-600">
             เกี่ยวกับเรา
           </span>
         </h1>
-        <div className="w-32 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-12 rounded-full" />
+        <div className="w-32 h-1 bg-emerald-500 mx-auto mb-12 rounded-full" />
 
         <p className="text-gray-600 text-xl lg:text-2xl mb-16 max-w-3xl mx-auto leading-relaxed">
           เว็บไซต์นี้พัฒนาโดยทีมนักเรียนจำนวน 2 คน ที่มีความตั้งใจในการสร้างระบบที่ใช้งานง่าย ปลอดภัย และทันสมัย
@@ -38,7 +38,7 @@ const About = () => {
           {/* ผู้พัฒนาคนที่ 1 */}
           <div className="group bg-white/90 rounded-3xl shadow-xl border border-gray-200/50 p-8 flex flex-col items-center hover:shadow-2xl transform transition-transform duration-300 hover:-translate-y-1">
             <div className="relative mb-6">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-20"></div>
+              <div className="absolute inset-0 bg-emerald-500 rounded-full opacity-20"></div>
               <Image
                 src="/img/get.jpg"
                 alt="Developer 1"
@@ -49,7 +49,7 @@ const About = () => {
               />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-3">วรวุฒิ ยาชัยยะ</h2>
-            <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mb-4"></div>
+            <div className="w-16 h-1 bg-emerald-500 rounded-full mb-4"></div>
             <p className="text-gray-600 text-center leading-relaxed">
               ผู้พัฒนา Full Stack ด้วย React, Next.js และการออกแบบระบบฐานข้อมูล
             </p>
@@ -58,7 +58,7 @@ const About = () => {
           {/* ผู้พัฒนาคนที่ 2 */}
           <div className="group bg-white/90 rounded-3xl shadow-xl border border-gray-200/50 p-8 flex flex-col items-center hover:shadow-2xl transform transition-transform duration-300 hover:-translate-y-1">
             <div className="relative mb-6">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full opacity-20"></div>
+              <div className="absolute inset-0 bg-teal-500 rounded-full opacity-20"></div>
               <Image
                 src="/img/fuse.jpg"
                 alt="Developer 2"
@@ -69,7 +69,7 @@ const About = () => {
               />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-3">ปรเมศวร์ สุขรอด</h2>
-            <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mb-4"></div>
+            <div className="w-16 h-1 bg-teal-500 rounded-full mb-4"></div>
             <p className="text-gray-600 text-center leading-relaxed">
               ผู้พัฒนา UI/UX และการจัดการระบบ Backend ด้วย Prisma และ PostgreSQL
             </p>
@@ -79,16 +79,16 @@ const About = () => {
         {/* ส่วนเทคโนโลยีที่ใช้ */}
         <div className="mt-20">
           <h2 className="text-4xl font-bold mb-8">
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-emerald-600">
               เทคโนโลยีที่ใช้
             </span>
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-12 rounded-full" />
+          <div className="w-24 h-1 bg-emerald-500 mx-auto mb-12 rounded-full" />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {/* Frontend */}
             <div className="group bg-white/90 rounded-2xl p-6 text-center shadow-lg border border-gray-200/50 hover:shadow-xl transform transition-transform duration-300 hover:-translate-y-1">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-emerald-500 rounded-xl flex items-center justify-center">
                 <Code className="w-8 h-8 text-white" />
               </div>
               <h3 className="font-semibold text-gray-800 mb-2">Frontend</h3>
@@ -97,7 +97,7 @@ const About = () => {
 
             {/* Backend */}
             <div className="group bg-white/90 rounded-2xl p-6 text-center shadow-lg border border-gray-200/50 hover:shadow-xl transform transition-transform duration-300 hover:-translate-y-1">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-teal-500 rounded-xl flex items-center justify-center">
                 <Server className="w-8 h-8 text-white" />
               </div>
               <h3 className="font-semibold text-gray-800 mb-2">Backend</h3>
@@ -106,7 +106,7 @@ const About = () => {
 
             {/* Database */}
             <div className="group bg-white/90 rounded-2xl p-6 text-center shadow-lg border border-gray-200/50 hover:shadow-xl transform transition-transform duration-300 hover:-translate-y-1">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-cyan-500 rounded-xl flex items-center justify-center">
                 <Database className="w-8 h-8 text-white" />
               </div>
               <h3 className="font-semibold text-gray-800 mb-2">Database</h3>
@@ -115,7 +115,7 @@ const About = () => {
 
             {/* Styling */}
             <div className="group bg-white/90 rounded-2xl p-6 text-center shadow-lg border border-gray-200/50 hover:shadow-xl transform transition-transform duration-300 hover:-translate-y-1">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-emerald-600 rounded-xl flex items-center justify-center">
                 <Palette className="w-8 h-8 text-white" />
               </div>
               <h3 className="font-semibold text-gray-800 mb-2">Styling</h3>
@@ -127,11 +127,11 @@ const About = () => {
         {/* ส่วนติดต่อเรา */}
         <div className="mt-20">
           <h2 className="text-4xl font-bold mb-8">
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-emerald-600">
               ติดต่อเรา
             </span>
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-12 rounded-full" />
+          <div className="w-24 h-1 bg-emerald-500 mx-auto mb-12 rounded-full" />
 
           <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 p-8 max-w-2xl mx-auto">
             <p className="text-gray-600 text-lg mb-6 leading-relaxed">
@@ -139,8 +139,8 @@ const About = () => {
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-              <div className="flex items-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-4">
+              <div className="flex items-center p-4 bg-emerald-50 rounded-2xl">
+                <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center mr-4">
                   <Mail className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -149,8 +149,8 @@ const About = () => {
                 </div>
               </div>
               
-              <div className="flex items-center p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-4">
+              <div className="flex items-center p-4 bg-teal-50 rounded-2xl">
+                <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mr-4">
                   <Phone className="w-6 h-6 text-white" />
                 </div>
                 <div>
