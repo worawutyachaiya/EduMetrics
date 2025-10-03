@@ -96,3 +96,65 @@ export const generatePasswordResetEmail = (name: string, resetUrl: string): stri
     </html>
   `;
 };
+
+export const generateEmailVerificationEmail = (name: string, verificationUrl: string): string => {
+  return `
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ยืนยันอีเมล</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; background: #48bb78; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+            .button:hover { background: #38a169; }
+            .info { background: #e6fffa; border: 1px solid #81e6d9; color: #234e52; padding: 15px; border-radius: 5px; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>📧 ยืนยันอีเมลของคุณ</h1>
+            </div>
+            <div class="content">
+                <h2>สวัสดี, ${name}</h2>
+                <p>ขอบคุณที่ลงทะเบียนเข้าใช้งานระบบเรียนรู้ออนไลน์ของเรา!</p>
+                
+                <p>เพื่อให้การลงทะเบียนสมบูรณ์ กรุณายืนยันอีเมลของคุณโดยคลิกปุ่มด้านล่าง:</p>
+                
+                <div style="text-align: center;">
+                    <a href="${verificationUrl}" class="button">ยืนยันอีเมล</a>
+                </div>
+                
+                <p>หรือคัดลอกลิงก์นี้ไปวางในเบราว์เซอร์:</p>
+                <p style="word-break: break-all; background: #f0f0f0; padding: 10px; border-radius: 5px;">
+                    ${verificationUrl}
+                </p>
+                
+                <div class="info">
+                    <strong>ℹ️ ข้อมูลสำคัญ:</strong>
+                    <ul>
+                        <li>ลิงก์นี้จะหมดอายุใน <strong>24 ชั่วโมง</strong></li>
+                        <li>คุณต้องยืนยันอีเมลก่อนที่จะสามารถเข้าใช้งานระบบได้</li>
+                        <li>หากคุณไม่ได้ลงทะเบียน กรุณาเพิกเฉยต่ออีเมลนี้</li>
+                    </ul>
+                </div>
+                
+                <p>หากคุณมีปัญหาหรือข้อสงสัย กรุณาติดต่อแอดมิน</p>
+                
+                <p>ยินดีต้อนรับสู่ชุมชนการเรียนรู้ของเรา! 🎓</p>
+            </div>
+            <div class="footer">
+                <p>© 2024 ระบบเรียนรู้ออนไลน์ HTML & CSS</p>
+                <p><em>อีเมลนี้ถูกส่งโดยอัตโนมัติ กรุณาอย่าตอบกลับ</em></p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `;
+};

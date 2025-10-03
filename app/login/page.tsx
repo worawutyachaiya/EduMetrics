@@ -15,6 +15,7 @@ const Login = () => {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [needsVerification, setNeedsVerification] = useState(false)
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
@@ -40,12 +41,14 @@ const Login = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
     setError('')
+    setNeedsVerification(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+    setNeedsVerification(false)
 
     if (!form.studentId || !form.password) {
       setError("กรุณากรอกรหัสนักเรียนและรหัสผ่าน")
@@ -53,10 +56,29 @@ const Login = () => {
       return
     }
 
-    const success = await login(form.studentId, form.password)
-    
-    if (!success) {
-      setError("รหัสนักเรียนหรือรหัสผ่านไม่ถูกต้อง")
+    try {
+      // Try to login directly first
+      const success = await login(form.studentId, form.password)
+      
+      if (!success) {
+        // If login failed, check if it's due to email verification
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form)
+        })
+        
+        const data = await res.json()
+        
+        if (data.requiresVerification) {
+          setNeedsVerification(true)
+          setError(data.error)
+        } else {
+          setError("รหัสนักเรียนหรือรหัสผ่านไม่ถูกต้อง")
+        }
+      }
+    } catch (error) {
+      setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบ")
     }
     
     setIsLoading(false)
@@ -101,13 +123,27 @@ const Login = () => {
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 text-red-100 rounded-2xl backdrop-blur-sm">
-                <div className="flex items-center">
+              <div className={`mb-6 p-4 border rounded-2xl backdrop-blur-sm ${
+                needsVerification 
+                  ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-100' 
+                  : 'bg-red-500/20 border-red-500/30 text-red-100'
+              }`}>
+                <div className="flex items-center mb-2">
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
                   {error}
                 </div>
+                {needsVerification && (
+                  <div className="text-sm">
+                    <a 
+                      href="/resend-verification" 
+                      className="text-yellow-300 hover:text-yellow-200 font-medium underline transition-colors duration-200"
+                    >
+                      ขออีเมลยืนยันใหม่
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 

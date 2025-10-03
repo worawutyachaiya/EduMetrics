@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
+import { sendEmail, generateEmailVerificationEmail } from '@/lib/email'
+import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -147,7 +149,11 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user
+    // Generate verification token first
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Create user as INACTIVE until email verification
     const userData = {
       firstName,
       lastName,
@@ -155,12 +161,16 @@ export async function POST(request: NextRequest) {
       email,
       password: hashedPassword,
       academicYear: userAcademicYearAD, // Store as AD in database
-      role: 'student'
+      role: 'student',
+      isActive: false, // Set to false initially
+      resetToken: verificationToken, // Store verification token
+      resetTokenExpiry: verificationExpiry
     }
 
-    console.log('💾 Creating user with data:', {
+    console.log('💾 Creating INACTIVE user with data:', {
       ...userData,
-      password: '[HIDDEN]'
+      password: '[HIDDEN]',
+      resetToken: '[HIDDEN]'
     })
 
     const user = await prisma.user.create({
@@ -173,18 +183,37 @@ export async function POST(request: NextRequest) {
         email: true,
         academicYear: true,
         role: true,
+        isActive: true,
         createdAt: true
       }
     })
 
-    console.log('✅ User created successfully:', user)
+    console.log('✅ Inactive user created successfully:', user)
+
+    // Create verification URL
+    const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+
+    // Send verification email
+    try {
+      await sendEmail({
+        to: email,
+        subject: '📧 ยืนยันอีเมลสำหรับระบบเรียนรู้ออนไลน์',
+        html: generateEmailVerificationEmail(`${firstName} ${lastName}`, verificationUrl)
+      });
+      console.log('✅ Verification email sent successfully');
+    } catch (emailError) {
+      console.error('⚠️ Failed to send verification email:', emailError);
+      // If email fails, delete the user record
+      await prisma.user.delete({ where: { id: user.id } });
+      return NextResponse.json(
+        { error: 'ไม่สามารถส่งอีเมลยืนยันได้ กรุณาลองลงทะเบียนใหม่อีกครั้ง' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
-      message: 'ลงทะเบียนสำเร็จ',
-      user: {
-        ...user,
-        academicYear: user.academicYear + 543 // Return as BE to frontend
-      }
+      message: 'ส่งอีเมลยืนยันเรียบร้อยแล้ว กรุณาตรวจสอบอีเมลและคลิกลิงก์เพื่อยืนยันบัญชีของคุณ',
+      requiresVerification: true
     })
 
   } catch (error) {

@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     // ตรวจสอบสถานะการใช้งาน
     if (!user.isActive) {
       return NextResponse.json(
-        { error: 'บัญชีถูกระงับการใช้งาน' },
+        { error: 'กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ ตรวจสอบอีเมลของคุณหรือขออีเมลยืนยันใหม่', requiresVerification: true },
         { status: 403 }
       )
     }

@@ -45,6 +45,7 @@ const Register = () => {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [studentIdError, setStudentIdError] = useState('')
   const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
@@ -71,6 +72,8 @@ const Register = () => {
     const { name, value } = e.target
     setForm({ ...form, [name]: name === 'academicYear' ? parseInt(value) : value })
     setError('')
+    // clear field-specific errors
+    if (name === 'studentId') setStudentIdError('')
   }
 
   // เพิ่ม debug ในหน้า register - ใส่ในฟังก์ชัน handleSubmit
@@ -116,14 +119,44 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   // Validation อื่นๆ เดิม...
-  if (form.studentId.length < 12) {
-    setError("รหัสนักศึกษาต้องมีอย่างน้อย 12 ตัวอักษร")
+  // Student ID validation:
+  // - must be exactly 12 digits
+  // - must start with '4'
+  // - characters 2-3 (index 1-2) represent the admission year offset (e.g. '65' -> 2565 BE)
+  const studentId = form.studentId.trim()
+  if (!/^\d{12}$/.test(studentId)) {
+    setError("รหัสนักศึกษาไม่ถูกต้อง")
     setIsLoading(false)
     return
   }
 
-  if (!/^\d+$/.test(form.studentId)) {
-    setError("รหัสนักศึกษาต้องเป็นตัวเลขเท่านั้น")
+  if (!studentId.startsWith('4')) {
+    setError("รหัสนักศึกษาไม่ถูกต้อง")
+    setIsLoading(false)
+    return
+  }
+
+  // ตรวจสอบปีที่เข้าศึกษา: หลักที่ 2-3 ของรหัสเป็นปีพ.ศ.ย่อ เช่น '65' -> พ.ศ.2565
+  // ขยายช่วงที่รับได้ให้ครอบคลุมผู้เข้าศึกษาภายในช่วงปีที่ผ่านมาจนถึงปีหน้า (ตัวอย่าง: last 6 years..next year)
+  const yearTwoDigits = studentId.substring(1, 3) // e.g. '65'
+  const enteredYearTwoDigits = parseInt(yearTwoDigits, 10)
+  if (Number.isNaN(enteredYearTwoDigits)) {
+    setError(`รหัสนักศึกษาไม่ถูกต้อง`)
+    setIsLoading(false)
+    return
+  }
+
+  const enteredYearBE = 2500 + enteredYearTwoDigits // convert '65' -> 2565
+  const recentYearsWindow = 6 // how many past years we accept
+  const allowedYears = [] as number[]
+  for (let i = 0; i <= recentYearsWindow; i++) {
+    allowedYears.push(currentYearBE - i)
+  }
+  // also allow next year (in case of early registrations)
+  allowedYears.push(currentYearBE + 1)
+
+  if (!allowedYears.includes(enteredYearBE)) {
+    setError(`รหัสนักศึกษาไม่ถูกต้อง: ปีที่เข้าศึกษาต้องเป็นหนึ่งใน ${allowedYears.join(', ')}`)
     setIsLoading(false)
     return
   }
@@ -135,8 +168,17 @@ const handleSubmit = async (e: React.FormEvent) => {
     return
   }
 
-  if (form.password.length < 6) {
-    setError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร")
+  // Password complexity validation
+  const password = form.password
+  const passwordErrors: string[] = []
+  if (password.length < 6) passwordErrors.push('ความยาวอย่างน้อย 6 ตัวอักษร')
+  if (!/[A-Z]/.test(password)) passwordErrors.push('มีตัวพิมพ์ใหญ่ (A-Z) อย่างน้อย 1 ตัว')
+  if (!/[a-z]/.test(password)) passwordErrors.push('มีตัวพิมพ์เล็ก (a-z) อย่างน้อย 1 ตัว')
+  if (!/[0-9]/.test(password)) passwordErrors.push('มีตัวเลข (0-9) อย่างน้อย 1 ตัว')
+  if (!/[.!@#\$%\^&\*(),?"':;{}|<>\[\]\\/\\\\+=_-]/.test(password)) passwordErrors.push('มีอักขระพิเศษ เช่น . & @ # หรืออื่นๆ')
+
+  if (passwordErrors.length > 0) {
+    setError('รูปแบบรหัสผ่านไม่ถูกต้อง: ' + passwordErrors.join(' ; '))
     setIsLoading(false)
     return
   }
@@ -181,19 +223,24 @@ const handleSubmit = async (e: React.FormEvent) => {
       if (data.debug) {
         console.log('🔍 Debug info:', data.debug)
       }
-      setError(data.error || "เกิดข้อผิดพลาด")
+        // If the API indicates the studentId is already used, show inline studentId error
+        if (data.error && data.error.includes('รหัสนักศึกษ')) {
+          setStudentIdError(data.error)
+          setError('')
+        } else {
+          setError(data.error || "เกิดข้อผิดพลาด")
+        }
     } else {
       console.log('✅ Registration successful!')
-      const loginSuccess = await login(form.studentId, form.password)
-
-      if (loginSuccess) {
-        const authRes = await fetch('/api/auth/check')
-        const authData = await authRes.json()
-        if (authData.user.role === 'admin') {
-          router.push('/admin/quiz')
-        } else {
-          router.push('/')
-        }
+      // Show success message instead of auto-login
+      setError('')
+      // Show success alert with instruction
+      const confirmGoToVerification = confirm(
+        'ลงทะเบียนสำเร็จ!\n\nเราได้ส่งอีเมลยืนยันไปยังอีเมลของคุณแล้ว กรุณาตรวจสอบอีเมลและคลิกลิงก์เพื่อยืนยันบัญชี\n\nต้องการไปหน้าขออีเมลยืนยันใหม่หรือไม่?'
+      )
+      
+      if (confirmGoToVerification) {
+        router.push('/resend-verification')
       } else {
         router.push('/login')
       }
@@ -269,6 +316,11 @@ const handleSubmit = async (e: React.FormEvent) => {
                 isLoading={isLoading}
                 minLength={12}
               />
+              {studentIdError && (
+                <div role="alert" className="mt-2 text-sm text-red-200 bg-red-500/10 p-2 rounded-2xl border border-red-500/20">
+                  {studentIdError}
+                </div>
+              )}
 
               <InputField 
                 label="อีเมล" 
