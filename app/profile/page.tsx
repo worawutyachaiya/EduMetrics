@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
 
 interface UserData {
   id: number;
@@ -154,16 +155,43 @@ const ProfilePage = () => {
   // อัปโหลดรูปโปรไฟล์
   const handleUploadAvatar = async (file: File) => {
     if (!file) return;
+    
+    // ตรวจสอบประเภทไฟล์
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      setMessage({ type: 'error', text: 'รองรับเฉพาะไฟล์ JPG, PNG, WEBP' });
+      await Swal.fire({
+        icon: 'error',
+        title: 'ประเภทไฟล์ไม่ถูกต้อง',
+        text: 'รองรับเฉพาะไฟล์ JPG, PNG, WEBP เท่านั้น',
+        confirmButtonColor: '#10b981',
+      });
       return;
     }
+    
+    // ตรวจสอบขนาดไฟล์
     if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'ขนาดไฟล์ต้องไม่เกิน 5MB' });
+      await Swal.fire({
+        icon: 'error',
+        title: 'ไฟล์ใหญ่เกินไป',
+        text: 'ขนาดไฟล์ต้องไม่เกิน 5MB',
+        confirmButtonColor: '#10b981',
+      });
       return;
     }
+    
+    // แสดง Loading
+    Swal.fire({
+      title: 'กำลังอัปโหลดรูปภาพ...',
+      html: 'กรุณารอสักครู่',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    
     setUploading(true);
     setMessage({ type: '', text: '' });
+    
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -173,33 +201,106 @@ const ProfilePage = () => {
         credentials: 'include',
       });
       const result = await res.json();
+      
       if (res.ok) {
         setUserData((prev) => (prev ? { ...prev, avatarUrl: result.user.avatarUrl } : prev));
-        setMessage({ type: 'success', text: 'อัปโหลดรูปโปรไฟล์สำเร็จ' });
+        
+        // แสดงความสำเร็จ
+        await Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ!',
+          text: 'อัปโหลดรูปโปรไฟล์สำเร็จ',
+          confirmButtonColor: '#10b981',
+          timer: 2000,
+          showConfirmButton: false,
+        });
       } else {
-        setMessage({ type: 'error', text: result.error || 'อัปโหลดไม่สำเร็จ' });
+        // แสดงข้อผิดพลาด
+        await Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: result.error || 'อัปโหลดไม่สำเร็จ',
+          confirmButtonColor: '#10b981',
+        });
       }
     } catch (e) {
-      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการอัปโหลด' });
+      await Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'เกิดข้อผิดพลาดในการอัปโหลด กรุณาลองใหม่อีกครั้ง',
+        confirmButtonColor: '#10b981',
+      });
     } finally {
       setUploading(false);
     }
   };
 
   const handleDeleteAvatar = async () => {
+    // แสดงคำยืนยันก่อนลบ
+    const result = await Swal.fire({
+      title: 'คุณแน่ใจหรือไม่?',
+      text: 'ต้องการลบรูปโปรไฟล์ของคุณหรือไม่?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'ใช่, ลบเลย!',
+      cancelButtonText: 'ยกเลิก',
+    });
+    
+    if (!result.isConfirmed) {
+      return;
+    }
+    
+    // แสดง Loading
+    Swal.fire({
+      title: 'กำลังลบรูปภาพ...',
+      html: 'กรุณารอสักครู่',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+    
     setDeletingAvatar(true);
     setMessage({ type: '', text: '' });
+    
     try {
-      const res = await fetch('/api/profile/avatar', { method: 'DELETE', credentials: 'include' });
+      const res = await fetch('/api/profile/avatar', { 
+        method: 'DELETE', 
+        credentials: 'include' 
+      });
       const result = await res.json();
+      
       if (res.ok) {
         setUserData((prev) => (prev ? { ...prev, avatarUrl: null } : prev));
-        setMessage({ type: 'success', text: 'ลบรูปโปรไฟล์แล้ว' });
+        
+        // แสดงความสำเร็จ
+        await Swal.fire({
+          icon: 'success',
+          title: 'ลบสำเร็จ!',
+          text: 'ลบรูปโปรไฟล์เรียบร้อยแล้ว',
+          confirmButtonColor: '#10b981',
+          timer: 2000,
+          showConfirmButton: false,
+        });
       } else {
-        setMessage({ type: 'error', text: result.error || 'ลบรูปไม่สำเร็จ' });
+        // แสดงข้อผิดพลาด
+        await Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด',
+          text: result.error || 'ลบรูปไม่สำเร็จ',
+          confirmButtonColor: '#10b981',
+        });
       }
     } catch (e) {
-      setMessage({ type: 'error', text: 'เกิดข้อผิดพลาดในการลบรูป' });
+      await Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'เกิดข้อผิดพลาดในการลบรูป กรุณาลองใหม่อีกครั้ง',
+        confirmButtonColor: '#10b981',
+      });
     } finally {
       setDeletingAvatar(false);
     }

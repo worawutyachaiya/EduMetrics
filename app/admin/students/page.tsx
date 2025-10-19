@@ -70,37 +70,21 @@ function AdminStudentsContent() {
   const [showDetail, setShowDetail] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  // สำหรับค้นหาใน modal รายละเอียด
-  const [detailSearchTerm, setDetailSearchTerm] = useState("");
-  // ฟังก์ชันกรอง detailedResults ตาม detailSearchTerm (รองรับ pattern เช่น HTML, CSS, HTML1, CSS2, HTML บทที่ 1, CSS บทที่ 2)
+  // สำหรับกรองใน modal รายละเอียด
+  const [detailFilterType, setDetailFilterType] = useState<string>("all");
+  const [detailFilterLesson, setDetailFilterLesson] = useState<string>("all");
+  
+  // ฟังก์ชันกรอง detailedResults ตาม dropdown filters
   const filteredDetailedResults = selectedStudent?.detailedResults.filter(result => {
-    if (!detailSearchTerm.trim()) return true;
-    const term = detailSearchTerm.trim().toLowerCase();
-    // split by comma, remove empty, trim
-    const terms = term.split(',').map(t => t.trim()).filter(Boolean);
-    // สร้าง pattern หลัก ๆ
-    return terms.some(t => {
-      // HTML, CSS
-      if (t === 'html' || t === 'css') {
-        return result.quizType.toLowerCase() === t;
-      }
-      // HTML1, CSS2
-      const matchTypeNum = t.match(/^(html|css)(\d+)$/);
-      if (matchTypeNum) {
-        return result.quizType.toLowerCase() === matchTypeNum[1] && result.lesson.toString() === matchTypeNum[2];
-      }
-      // HTML บทที่ 1, CSS บทที่ 2
-      const matchTypeLesson = t.match(/^(html|css)\s*บทที่\s*(\d+)$/);
-      if (matchTypeLesson) {
-        return result.quizType.toLowerCase() === matchTypeLesson[1] && result.lesson.toString() === matchTypeLesson[2];
-      }
-      // เฉพาะเลขบทเรียน เช่น 1, 2
-      if (/^\d+$/.test(t)) {
-        return result.lesson.toString() === t;
-      }
-      // เฉพาะประเภท (contains)
-      return result.quizType.toLowerCase().includes(t);
-    });
+    // กรองตามประเภท (HTML/CSS)
+    if (detailFilterType !== 'all' && result.quizType !== detailFilterType) {
+      return false;
+    }
+    // กรองตามบทเรียน
+    if (detailFilterLesson !== 'all' && result.lesson.toString() !== detailFilterLesson) {
+      return false;
+    }
+    return true;
   }) || [];
 
   const fetchStudents = useCallback(async () => {
@@ -409,18 +393,52 @@ function AdminStudentsContent() {
                 </div>
               </div>
 
-              {/* Search in detail modal */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-black mb-2">
-                  ค้นหา (ประเภทหรือบทเรียน เช่น HTML, CSS, HTML1, CSS2, HTML บทที่ 1, CSS บทที่ 2)
-                </label>
-                <input
-                  type="text"
-                  value={detailSearchTerm}
-                  onChange={e => setDetailSearchTerm(e.target.value)}
-                  placeholder="ค้นหาด้วยประเภทหรือเลขบทเรียน..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                />
+              {/* Filters in detail modal */}
+              <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ประเภทคอร์ส
+                  </label>
+                  <select
+                    value={detailFilterType}
+                    onChange={e => setDetailFilterType(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all">ทั้งหมด</option>
+                    <option value="HTML">HTML</option>
+                    <option value="CSS">CSS</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    บทเรียนที่
+                  </label>
+                  <select
+                    value={detailFilterLesson}
+                    onChange={e => setDetailFilterLesson(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all">ทุกบทเรียน</option>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(lesson => (
+                      <option key={lesson} value={lesson.toString()}>
+                        บทที่ {lesson}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="flex items-end">
+                  <button
+                    onClick={() => {
+                      setDetailFilterType("all");
+                      setDetailFilterLesson("all");
+                    }}
+                    className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                  >
+                    🔄 รีเซ็ตตัวกรอง
+                  </button>
+                </div>
               </div>
 
               {/* Results */}
@@ -449,15 +467,15 @@ function AdminStudentsContent() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">คะแนน:</span>
-                                <span className="text-sm font-medium">{result.pretest.score}/{result.pretest.totalScore}</span>
+                                <span className="text-sm font-medium text-gray-600">{result.pretest.score}/{result.pretest.totalScore}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">เปอร์เซ็นต์:</span>
-                                <span className="text-sm font-medium">{result.pretest.percentage}%</span>
+                                <span className="text-sm font-medium text-gray-600">{result.pretest.percentage}%</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm text-gray-600">วันที่:</span>
-                                <span className="text-sm">{new Date(result.pretest.completedAt).toLocaleDateString('th-TH')}</span>
+                                <span className="text-sm text-gray-600">{new Date(result.pretest.completedAt).toLocaleDateString('th-TH')}</span>
                               </div>
                             </div>
                           ) : (
@@ -479,7 +497,7 @@ function AdminStudentsContent() {
                                 <div key={idx} className="bg-white rounded p-3 border border-green-200">
                                   <div className="flex justify-between items-center mb-1">
                                     <span className="text-xs font-medium text-gray-600">ครั้งที่ {result.posttests.length - idx}</span>
-                                    <span className="text-sm font-semibold">{posttest.score}/{posttest.totalScore} ({posttest.percentage}%)</span>
+                                    <span className="text-sm font-semibold text-gray-600">{posttest.score}/{posttest.totalScore} ({posttest.percentage}%)</span>
                                   </div>
                                   <p className="text-xs text-gray-500">
                                     {new Date(posttest.completedAt).toLocaleDateString('th-TH')}
